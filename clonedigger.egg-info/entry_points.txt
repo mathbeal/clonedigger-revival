@@ -1,0 +1,3 @@
+[console_scripts]
+clonedigger = clonedigger.clonedigger:main
+
