@@ -116,14 +116,23 @@ class SuffixTree[T]:
             Pairs of runs, as slices of the strings that were added.
         """
         found: list[tuple[Sequence[T], Sequence[T]]] = []
+        # The same prefix of a string is weighed again for every string it meets: its
+        # size is kept, keyed by the string, which the tree keeps alive, and the length.
+        sizes: dict[tuple[int, int], float] = {}
+
+        def heavy(string: Sequence[T], length: int) -> bool:
+            key = (id(string), length)
+            if key not in sizes:
+                sizes[key] = size(string[:length])
+            return sizes[key] >= threshold
 
         def keep_if_left_diverse(one: _Position[T], two: _Position[T], back: int) -> None:
             # A run is left-diverse when it starts a string, or follows different elements.
             diverse = one.previous is None or one.previous != two.previous
             if diverse and one.position > back:
-                candidate = (one.string[: one.position - back], two.string[: two.position - back])
-                if size(candidate[0]) >= threshold or size(candidate[1]) >= threshold:
-                    found.append(candidate)
+                first, second = one.position - back, two.position - back
+                if heavy(one.string, first) or heavy(two.string, second):
+                    found.append((one.string[:first], two.string[:second]))
 
         def find_from(node: _TrieNode[T], remaining: float) -> None:
             if remaining <= 0:

@@ -19,12 +19,12 @@ The thresholds keep their meaning and their default values. They are passed as
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from itertools import groupby
-from operator import itemgetter
 from typing import TYPE_CHECKING, cast
 
-from clonedigger.anti_unification import Cluster, anti_unify
+from clonedigger.anti_unification import Cluster, anti_unify, difference
 from clonedigger.suffix_tree import SuffixTree
 from clonedigger.tree import Node
 
@@ -158,13 +158,22 @@ def build_clusters(statements: Sequence[Statement], threshold: int) -> list[Clus
         The clusters, in the order they were started.
     """
     clusters: list[Cluster] = []
+    # Any cost above the threshold means a new cluster: weighing can stop there.
+    above = math.nextafter(threshold, math.inf)
     for statement in statements:
-        costs = [(cluster.add_cost(statement.tree), cluster) for cluster in clusters]
-        best = min(costs, key=itemgetter(0), default=None)
-        if best is None or best[0] > threshold:
+        best: Cluster | None = None  # pragma: no mutate - any value loses to an inf cost
+        lowest = math.inf
+        for cluster in clusters:
+            # The first cluster of lowest cost wins; one that cannot beat it, or that
+            # costs more than the threshold, stops being weighed early.
+            # The limit only saves time: the decision is the same without it.
+            cost = cluster.add_cost(statement.tree, min(lowest, above))  # pragma: no mutate
+            if cost < lowest:
+                best, lowest = cluster, cost
+        if best is None or lowest > threshold:
             clusters.append(Cluster(statement.tree))
         else:
-            best[1].unify(statement.tree)
+            best.unify(statement.tree)
     return clusters
 
 
@@ -179,14 +188,19 @@ def mark_statements(statements: Sequence[Statement], clusters: Sequence[Cluster]
         # The cluster whose pattern the statement is closest to, the first on a tie.
         # Clone Digger 1.1.0 also added the statement to every cluster that improved on
         # the best so far, which inflated their sizes; only the chosen one receives it.
-        distances = [_distance_to(cluster, statement.tree) for cluster in clusters]
-        best = clusters[distances.index(min(distances))]
+        # A cluster stops being weighed once it is no closer than the best so far.
+        best, lowest = clusters[0], math.inf
+        for cluster in clusters:
+            distance = _distance_to(cluster, statement.tree, lowest)
+            if distance < lowest:
+                best, lowest = cluster, distance
         statement.mark = best
         best.add_without_unification(statement.tree)
 
 
-def _distance_to(cluster: Cluster, tree: Node) -> float:
-    return anti_unify(cluster.pattern or tree, tree).distance
+def _distance_to(cluster: Cluster, tree: Node, limit: float) -> float:
+    # The limit only saves time: the closest cluster is the same without it.
+    return sum(difference(cluster.pattern or tree, tree, limit))  # pragma: no mutate
 
 
 def drop_long_equal_runs(sequences: Sequence[Sequence[Statement]]) -> list[list[Statement]]:

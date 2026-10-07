@@ -63,6 +63,19 @@ mutate:
 fuzz examples="50000":
     CLONEDIGGER_FUZZ_EXAMPLES={{examples}} uv run pytest -o addopts="" -p no:cacheprovider -q --hypothesis-profile=fuzz
 
+# Time the detection on packages of the standard library of growing size, and on the
+# whole of it (tests left out). Reference, Apple M4, Python 3.14: json 0.1 s, email
+# 0.7 s, asyncio 1.0 s, the whole library (455,000 lines) 62 s.
+bench:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    lib="$(uv run python -c 'import sysconfig; print(sysconfig.get_path("stdlib"))')"
+    for target in json email asyncio .; do
+      start=$(date +%s.%N)
+      found="$(uv run clonedigger "$lib/$target" --ignore-dir test --ignore-dir tests --ignore-dir idlelib | tail -1)" || true
+      echo "$target: $(echo "$(date +%s.%N) - $start" | bc) s, $found"
+    done
+
 # Known vulnerabilities in the locked dependencies.
 audit:
     uv export --frozen --no-emit-project --all-groups -o /tmp/clonedigger-req.txt

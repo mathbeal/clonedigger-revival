@@ -138,6 +138,42 @@ def anti_unify(first: Node, second: Node, *, share_variables: bool = True) -> An
     return AntiUnification(walk(first, second), left, right)
 
 
+def difference(first: Node, second: Node, limit: float = float("inf")) -> tuple[float, float]:
+    """Weigh what anti-unifying two trees would put in its holes, without building it.
+
+    The clustering steps only need these two numbers, and compare a statement with
+    every cluster of its bucket: building the pattern and the variables there would be
+    wasted work. The walk is the one of `anti_unify`, with variables shared.
+
+    Args:
+        first: A tree.
+        second: Another tree.
+        limit: Stop as soon as the two sizes add up to this much or more: the caller
+            only wants to know whether the trees are closer than that.
+
+    Returns:
+        The `left_size` and the `right_size` of `anti_unify(first, second)`, or, once
+        their sum reaches `limit`, the sizes found so far.
+    """
+    seen: set[tuple[Node, Node]] = set()
+    left = right = 0.0
+    stack = [(first, second)]
+    while stack:
+        one, other = stack.pop()
+        if one == other:
+            continue
+        if one.label != other.label or len(one.children) != len(other.children):
+            if (one, other) not in seen:
+                seen.add((one, other))
+                left += one.size - VARIABLE_COST
+                right += other.size - VARIABLE_COST
+                if left + right >= limit:
+                    break
+            continue
+        stack.extend(zip(one.children, other.children, strict=True))  # pragma: no mutate
+    return left, right
+
+
 class Cluster:
     """Statements of the same shape, with the pattern they all fit.
 
@@ -167,15 +203,18 @@ class Cluster:
         """
         return len(self.trees)
 
-    def add_cost(self, tree: Node) -> float:
+    def add_cost(self, tree: Node, limit: float = float("inf")) -> float:
         """What adding a statement would cost: every member's share of the new holes.
 
         Args:
             tree: The statement to add.
+            limit: The caller only needs the cost if it is below this: the weighing
+                stops once it is sure to reach it.
 
         Returns:
             The size of what the pattern would lose, once for each member already in
-            the cluster, plus the size of what the new statement brings.
+            the cluster, plus the size of what the new statement brings; when that is
+            `limit` or more, a value of at least `limit`.
 
         Raises:
             ValueError: If the cluster has no pattern.
@@ -183,8 +222,9 @@ class Cluster:
         if self.pattern is None:
             msg = "a cluster made without a tree has no pattern to compare with"
             raise ValueError(msg)
-        result = anti_unify(self.pattern, tree)
-        return len(self) * result.left_size + result.right_size
+        # The cost is at least left + right, so stopping the weighing at the limit is safe.
+        left, right = difference(self.pattern, tree, limit)  # pragma: no mutate - time only
+        return len(self) * left + right
 
     def unify(self, tree: Node) -> None:
         """Add a statement, and widen the pattern to fit it.

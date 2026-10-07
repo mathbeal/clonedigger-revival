@@ -13,7 +13,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from clonedigger import Cluster, Node, Variable, anti_unify, substitute
-from clonedigger.anti_unification import substitution_size
+from clonedigger.anti_unification import difference, substitution_size
 
 GOLDEN = json.loads((Path(__file__).parent / "golden" / "anti_unification.json").read_text())
 
@@ -211,3 +211,49 @@ def test_patterns_keep_the_lines_of_the_first_tree() -> None:
     result = anti_unify(first, second)
     assert result.pattern.lines == {1}
     assert substitute(result.pattern, result.left).covered_lines == {1, 2}
+
+
+@given(TREES, TREES)
+def test_difference_weighs_what_anti_unification_would(one: Node, other: Node) -> None:
+    """The quick weighing gives the sizes of the full anti-unification, exactly."""
+    result = anti_unify(one, other)
+    assert difference(one, other) == (result.left_size, result.right_size)
+
+
+@pytest.mark.parametrize("name", sorted(CASES))
+def test_difference_on_the_recorded_cases(name: str) -> None:
+    """The quick weighing matches the sizes Clone Digger 1.1.0 recorded."""
+    assert list(difference(*CASES[name])) == GOLDEN[name]["substitution_sizes"]
+
+
+@given(TREES, TREES, st.integers(min_value=0, max_value=12))
+def test_difference_stops_at_its_limit(one: Node, other: Node, limit: int) -> None:
+    """Under the limit the sizes are exact; at it or over, their sum has reached it."""
+    exact = sum(difference(one, other))
+    bounded = sum(difference(one, other, limit))
+    if exact < limit:
+        assert bounded == exact
+    else:
+        assert limit <= bounded <= exact
+
+
+@given(TREES, TREES, st.integers(min_value=0, max_value=12))
+def test_add_cost_is_exact_below_its_limit(one: Node, other: Node, limit: int) -> None:
+    """Below the limit, the cost is the full one; otherwise it reaches the limit."""
+    cluster = Cluster(one)
+    cluster.unify(one)
+    exact = cluster.add_cost(other)
+    bounded = cluster.add_cost(other, limit)
+    if exact < limit:
+        assert bounded == exact
+    else:
+        assert bounded >= limit
+
+
+def test_difference_stops_at_the_first_difference_that_reaches_the_limit() -> None:
+    """With ten differences and a limit of one, the walk stops after the first."""
+    one = Node("Call", tuple(Node(f"a{index}") for index in range(10)))
+    other = Node("Call", tuple(Node(f"b{index}") for index in range(10)))
+    assert sum(difference(one, other)) == 10
+    assert difference(one, other, 1) == (0.5, 0.5)
+    assert difference(one, other, 1.5) == (1.0, 1.0)

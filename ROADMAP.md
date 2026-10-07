@@ -11,8 +11,11 @@ Each step ends with `just check` green and every mutant killed.
    code scanning tools, then the HTML report of the original.
    **Done: mutation testing** of the whole package: all 743 mutants are caught, 741
    by a failing test and 2 by a time-out (they make refinement loop forever).
-5. **Measure.** Compare with pylint `duplicate-code` and jscpd on real projects, and
-   show the clones only anti-unification finds. Profile the quadratic parts.
+   997 mutants today, all caught.
+5. **Measure.** Done for speed: the whole standard library of Python 3.14 (455,000
+   lines, tests left out) takes 62 s instead of 222 s, with the same 9,579 clones
+   (`just bench`). To come: compare with pylint `duplicate-code` and jscpd on real
+   projects, and show the clones only anti-unification finds.
 6. **Publish**, with the original author's agreement on the name: continuous
    integration, attested releases on PyPI, documentation.
 

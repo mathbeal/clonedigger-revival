@@ -333,3 +333,25 @@ def test_sequences_spanning_exactly_the_threshold_take_part() -> None:
     files = [read_source(Path(f"{n}.py"), module.format(a=n)) for n in ("x", "y")]
     assert len(find_clones(files, Settings(size_threshold=5))) == 1
     assert find_clones(files, Settings(size_threshold=6)) == []
+
+
+def test_ties_go_to_the_first_cluster() -> None:
+    """Two clusters at the same distance: the first one gets the statement."""
+    statement = Statement(Node("Add", (Node("a"), Node("b"))), Path("x.py"))
+    first = Cluster(Node("Add", (Node("a"), Node("c"))))
+    second = Cluster(Node("Add", (Node("a"), Node("d"))))
+    mark_statements([statement], [first, second])
+    assert statement.mark is first
+
+
+def test_joining_ties_go_to_the_first_cluster() -> None:
+    """A statement that costs the same to two clusters joins the first one."""
+
+    def call(*names: str) -> Statement:
+        return Statement(Node("Call", tuple(Node(name) for name in names)), Path("x.py"))
+
+    first, second = call("p1", "p2", "q"), call("r1", "r2", "q")
+    # The two differ twice: over the threshold of 1, two clusters. The third differs
+    # once from each: a tie at 1, which goes to the first cluster.
+    clusters = build_clusters([first, second, call("p1", "r2", "q")], 1)
+    assert [len(cluster) for cluster in clusters] == [2, 1]
