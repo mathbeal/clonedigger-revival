@@ -1,0 +1,122 @@
+{
+ "a_aa": {
+  "pairs": [
+   [
+    "a", 
+    "a"
+   ], 
+   [
+    "a", 
+    "a"
+   ], 
+   [
+    "a", 
+    "a"
+   ]
+  ], 
+  "threshold": 0, 
+  "words": [
+   "a", 
+   "aa"
+  ]
+ }, 
+ "equal_strings": {
+  "pairs": [
+   [
+    "abc", 
+    "abc"
+   ], 
+   [
+    "abc", 
+    "abc"
+   ], 
+   [
+    "xabc", 
+    "xabc"
+   ]
+  ], 
+  "threshold": 2, 
+  "words": [
+   "xabc", 
+   "xabc", 
+   "yabc"
+  ]
+ }, 
+ "no_repeat": {
+  "pairs": [], 
+  "threshold": 1, 
+  "words": [
+   "abc", 
+   "xyz"
+  ]
+ }, 
+ "peter": {
+  "pairs": [
+   [
+    "Pet", 
+    "Pet"
+   ], 
+   [
+    "Pet", 
+    "Pet"
+   ], 
+   [
+    "Pet", 
+    "Pet"
+   ], 
+   [
+    "Pet", 
+    "Pet"
+   ], 
+   [
+    "Pet", 
+    "Pet"
+   ], 
+   [
+    "Peter", 
+    "Peter"
+   ]
+  ], 
+  "threshold": 3, 
+  "words": [
+   "abcPeter", 
+   "Pet1erbca", 
+   "Peter", 
+   "aPet0--"
+  ]
+ }, 
+ "repeat_inside": {
+  "pairs": [
+   [
+    "abc", 
+    "abc"
+   ]
+  ], 
+  "threshold": 2, 
+  "words": [
+   "xabcyabcz"
+  ]
+ }, 
+ "three_copies": {
+  "pairs": [
+   [
+    "abc", 
+    "abc"
+   ], 
+   [
+    "abc", 
+    "abc"
+   ], 
+   [
+    "abc", 
+    "abc"
+   ]
+  ], 
+  "threshold": 3, 
+  "words": [
+   "qabcr", 
+   "sabct", 
+   "uabcv"
+  ]
+ }
+}
