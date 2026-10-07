@@ -74,12 +74,14 @@ source = ["src/clonedigger"]
 dev = [
     "deptry==0.25.1",
     "hypothesis==6.168.5",
+    "jsonschema==4.25.1",
     "mutmut==3.8.0",
     "mypy==2.4.0",
     "pylint==4.0.9",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
     "ruff==0.16.10",
+    "types-jsonschema==4.26.0.20261006",
     "vulture==2.14",
 ]
 

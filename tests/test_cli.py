@@ -201,3 +201,10 @@ def test_every_option_reaches_the_settings(monkeypatch: pytest.MonkeyPatch) -> N
     assert received == [Settings(7, 3, 9, 4, force=True)]
     main([str(INPUTS)])
     assert received[-1] == Settings()
+
+
+def test_sarif_report(capsys: pytest.CaptureFixture[str]) -> None:
+    """--format sarif prints a SARIF log with the clone of the recorded inputs."""
+    assert main([str(INPUTS), "--format", "sarif"]) == 1
+    log = json.loads(capsys.readouterr().out)
+    assert len(log["runs"][0]["results"]) == 1

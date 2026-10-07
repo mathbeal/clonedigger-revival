@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Final
 
 from clonedigger.detection import Settings, find_clones
 from clonedigger.python_frontend import read_source
-from clonedigger.report import as_json, as_text
+from clonedigger.report import as_json, as_sarif, as_text
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -71,7 +71,11 @@ def _parser() -> argparse.ArgumentParser:
 
 
 # What --format names, and the function that writes it.
-REPORTS: Final[dict[str, Callable[[Sequence[Clone]], str]]] = {"text": as_text, "json": as_json}
+REPORTS: Final[dict[str, Callable[[Sequence[Clone]], str]]] = {
+    "text": as_text,
+    "json": as_json,
+    "sarif": as_sarif,
+}
 
 
 def _prefixes(text: str) -> tuple[str, ...]:

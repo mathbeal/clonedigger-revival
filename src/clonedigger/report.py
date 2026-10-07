@@ -1,16 +1,19 @@
 # Copyright 2026 Mathieu Béal
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Write the clones found, as text for a reader or JSON for a program.
+"""Write the clones found: text for a reader, JSON for a program, SARIF for CI.
 
-The HTML report of Clone Digger 1.1.0 is not ported yet.
+SARIF is the format code scanning tools read (GitHub code scanning among them): each
+clone is a result on its first copy, with the second copy as a related location.
 """
 
 from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from typing import TYPE_CHECKING
+from importlib.metadata import version
+from pathlib import PurePath
+from typing import TYPE_CHECKING, Final
 
 from clonedigger.detection import covered_lines
 
@@ -114,3 +117,72 @@ def as_text(clones: Sequence[Clone]) -> str:
     ]
     lines.append(f"{len(clones)} clone{'' if len(clones) == 1 else 's'} found.")
     return "\n".join(lines)
+
+
+# The one rule this tool checks, as SARIF describes rules.
+RULE_ID: Final = "duplicated-code"
+SARIF_SCHEMA: Final = "https://json.schemastore.org/sarif-2.1.0.json"
+ORIGINAL_URI: Final = "http://clonedigger.sourceforge.net"
+
+
+def _location(span: Span) -> dict[str, object]:
+    return {
+        "physicalLocation": {
+            "artifactLocation": {"uri": PurePath(span.path).as_posix()},
+            "region": {"startLine": span.start, "endLine": span.end},
+        }
+    }
+
+
+def as_sarif(clones: Sequence[Clone]) -> str:
+    """Write the clones as a SARIF 2.1.0 log.
+
+    Args:
+        clones: The clones found.
+
+    Returns:
+        One run of this tool, with one result per clone: located on its first copy,
+        with the second copy as a related location, so that each copy is reported once
+        per pair.
+    """
+    results = [
+        {
+            "ruleId": RULE_ID,
+            "level": "warning",
+            "message": {
+                "text": (
+                    f"Lines {finding.first.start}-{finding.first.end} are a copy of "
+                    f"[{finding.second}](1), up to a difference of {finding.distance:g}."
+                )
+            },
+            "locations": [_location(finding.first)],
+            "relatedLocations": [
+                {"id": 1, "message": {"text": "the other copy"}, **_location(finding.second)}
+            ],
+        }
+        for finding in findings(clones)
+    ]
+    rule = {
+        "id": RULE_ID,
+        "name": "DuplicatedCode",
+        "shortDescription": {"text": "Two runs of statements are copies of one another."},
+        "fullDescription": {
+            "text": (
+                "Found by anti-unification: the two copies have the same shape and differ "
+                "only in a few names, constants or subtrees."
+            )
+        },
+        "defaultConfiguration": {"level": "warning"},
+    }
+    driver = {
+        "name": "clonedigger",
+        "version": version("clonedigger-revival"),
+        "informationUri": ORIGINAL_URI,
+        "rules": [rule],
+    }
+    log = {
+        "$schema": SARIF_SCHEMA,
+        "version": "2.1.0",
+        "runs": [{"tool": {"driver": driver}, "results": results}],
+    }
+    return json.dumps(log, indent=2)
