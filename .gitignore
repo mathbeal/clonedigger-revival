@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+# Copies that iCloud Drive makes when it syncs a file twice: "name 2.ext".
+* [0-9]
+* [0-9].*
+* [0-9]/
