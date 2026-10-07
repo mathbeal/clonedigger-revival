@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: >-
+  Clone Digger was written by Peter Bulychev, with the anti-unification algorithm
+  designed with Marius Minea. If you use or study it, please cite the original paper.
+title: Clone Digger
+version: 1.1.0
+date-released: 2010-02-08
+license: GPL-3.0-or-later
+url: "http://clonedigger.sourceforge.net"
+authors:
+  - family-names: Bulychev
+    given-names: Peter
+    email: peter.bulychev@gmail.com
+preferred-citation:
+  type: conference-paper
+  title: Duplicate Code Detection Using Anti-Unification
+  authors:
+    - family-names: Bulychev
+      given-names: Peter
+    - family-names: Minea
+      given-names: Marius
+  collection-title: >-
+    Proceedings of the Spring/Summer Young Researchers' Colloquium on Software
+    Engineering (SYRCoSE)
+  year: 2008
+  doi: 10.15514/SYRCOSE-2008-2-22
+references:
+  - type: conference-paper
+    title: Anti-unification Algorithms and Their Applications in Program Analysis
+    authors:
+      - family-names: Bulychev
+        given-names: Peter
+      - family-names: Kostylev
+        given-names: Egor
+      - family-names: Zakharov
+        given-names: Vladimir
+    collection-title: Perspectives of Systems Informatics (PSI 2009)
+    publisher:
+      name: Springer
+    year: 2010
+    doi: 10.1007/978-3-642-11486-1_35
