@@ -43,7 +43,10 @@ def page() -> str:
     Returns:
         The HTML.
     """
-    files = [read_source(path, path.read_text()) for path in sorted(INPUTS.glob("*.py"))]
+    files = [
+        read_source(Path("inputs") / path.name, path.read_text())
+        for path in sorted(INPUTS.glob("*.py"))
+    ]
     return as_html(find_clones(files), {file.path: file.lines for file in files})
 
 
@@ -95,3 +98,32 @@ def test_source_is_cut_to_the_statement_and_dedented() -> None:
     assert source_text(statement, lines) == "if x:\n    y = 1"
     blank = Statement(Node("Pass", lines={4}), Path("a.py"))
     assert not source_text(blank, lines)
+
+
+def test_long_texts_are_compared_word_by_word_too() -> None:
+    """Common words are not set aside as noise, however long the text."""
+    left, right = highlight("x " * 120 + "p " + "x " * 120, "x " * 120 + "q " + "x " * 120)
+    assert left == "x " * 120 + "<mark>p</mark> " + "x " * 120
+    assert right == "x " * 120 + "<mark>q</mark> " + "x " * 120
+
+
+def test_clones_follow_one_another() -> None:
+    """Two clones make two tables, one after the other."""
+    body = "def {0}(a):\n    b = a + 1\n    c = b * 2\n    d = c - 3\n    e = d / 4\n    return e\n"
+    text = "".join(body.format(name) for name in ("f", "g")) + "\n"
+    other = "".join(body.replace("+", "-").format(name) for name in ("h", "k"))
+    files = [read_source(Path("a.py"), text), read_source(Path("b.py"), other)]
+    sources = {file.path: file.lines for file in files}
+    clones = find_clones(files)
+    assert len(clones) >= 2
+    assert as_html(clones, sources).count("</table>\n<h2") == len(clones) - 1
+
+
+def test_the_page_is_written_as_recorded() -> None:
+    """Every text and tag of the page is the recorded one.
+
+    After a deliberate change, regenerate tests/data/report.html from page(), with
+    the tool's version written <version>.
+    """
+    expected = (Path(__file__).parent / "data" / "report.html").read_text()
+    assert page().replace(__version__, "<version>") == expected

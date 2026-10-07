@@ -49,10 +49,10 @@ def source_text(statement: Statement, lines: Sequence[str]) -> str:
     """
     covered = statement.covered_lines
     chunk = lines[min(covered) - 1 : max(covered)]
-    margin = min(
-        (len(line) - len(line.lstrip()) for line in chunk if line.strip()),
-        default=0,
-    )
+    indents = [len(line) - len(line.lstrip()) for line in chunk if line.strip()]
+    if not indents:
+        return ""
+    margin = min(indents)
     return "\n".join(line[margin:] for line in chunk)
 
 
@@ -75,11 +75,14 @@ def highlight(first: str, second: str) -> tuple[str, str]:
         Both, escaped, with the parts that differ wrapped in `<mark>`.
     """
     tokens = (TOKEN.findall(first), TOKEN.findall(second))
-    matcher = difflib.SequenceMatcher(None, *tokens, autojunk=False)
+    # Without autojunk: in a long statement, common words must still anchor the match.
+    matcher = difflib.SequenceMatcher(
+        None, *tokens, autojunk=False
+    )  # pragma: no mutate - None is False
     marked: tuple[list[str], list[str]] = ([], [])
     for tag, start_1, end_1, start_2, end_2 in matcher.get_opcodes():
         parts = ("".join(tokens[0][start_1:end_1]), "".join(tokens[1][start_2:end_2]))
-        for out, text in zip(marked, parts, strict=True):
+        for out, text in zip(marked, parts, strict=True):  # pragma: no mutate - two and two
             escaped = html.escape(text)
             out.append(escaped if tag == "equal" or not text else f"<mark>{escaped}</mark>")
     return "".join(marked[0]), "".join(marked[1])
@@ -88,7 +91,8 @@ def highlight(first: str, second: str) -> tuple[str, str]:
 def _clone_table(number: int, clone: Clone, sources: Mapping[Path, Sequence[str]]) -> str:
     first, second = Span.of(clone.first), Span.of(clone.second)
     rows = []
-    for one, other in zip(clone.first, clone.second, strict=True):
+    # Both copies of a clone have as many statements.
+    for one, other in zip(clone.first, clone.second, strict=True):  # pragma: no mutate
         left, right = highlight(
             source_text(one, sources[one.path]), source_text(other, sources[other.path])
         )

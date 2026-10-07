@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clone Digger report</title>
+<style>
+:root { color-scheme: light dark; --mark: #ffd8d8; --line: #888; }
+@media (prefers-color-scheme: dark) { :root { --mark: #6b2020; } }
+body { font-family: system-ui, sans-serif; margin: 1.5rem; }
+table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-bottom: 2rem; }
+th, td { border: 1px solid var(--line); padding: 0.25rem 0.5rem; vertical-align: top; }
+pre { margin: 0; white-space: pre-wrap; font-family: ui-monospace, monospace; }
+mark { background: var(--mark); color: inherit; }
+</style>
+</head>
+<body>
+<h1>Clone Digger report</h1>
+<p>1 clone found. Clone Digger <version>, by Peter Bulychev, ported to Python 3.</p>
+<h2 id="clone-1">Clone 1</h2>
+<p>Distance 4, up to 6 lines.</p>
+<table>
+<tr><th>inputs/prices.py:13-18</th><th>inputs/prices.py:2-7</th></tr>
+<tr><td><pre><mark>amount</mark> = 0</pre></td><td><pre><mark>total</mark> = 0</pre></td></tr>
+<tr><td><pre>for <mark>line</mark> in <mark>lines</mark>:
+    <mark>cost</mark> = <mark>line</mark>.price * <mark>line</mark>.quantity
+    if <mark>line</mark>.discount:
+        <mark>cost</mark> = <mark>cost</mark> - <mark>line</mark>.discount
+    <mark>amount</mark> = <mark>amount</mark> + <mark>cost</mark></pre></td><td><pre>for <mark>item</mark> in <mark>items</mark>:
+    <mark>price</mark> = <mark>item</mark>.price * <mark>item</mark>.quantity
+    if <mark>item</mark>.discount:
+        <mark>price</mark> = <mark>price</mark> - <mark>item</mark>.discount
+    <mark>total</mark> = <mark>total</mark> + <mark>price</mark></pre></td></tr>
+</table>
+</body>
+</html>
