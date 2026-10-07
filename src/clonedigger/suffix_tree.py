@@ -125,12 +125,12 @@ class SuffixTree[T]:
                 if size(candidate[0]) >= threshold or size(candidate[1]) >= threshold:
                     found.append(candidate)
 
-        def search(node: _TrieNode[T], remaining: float) -> None:
+        def find_from(node: _TrieNode[T], remaining: float) -> None:
             if remaining <= 0:
                 for one, two, back in _comparisons(node):
                     keep_if_left_diverse(one, two, back)
             for code, child in node.children.items():
-                search(child, remaining - weight(code))
+                find_from(child, remaining - weight(code))
 
-        search(self._root, threshold)
+        find_from(self._root, threshold)
         return found

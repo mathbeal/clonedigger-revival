@@ -22,9 +22,9 @@ branches, vulture for code that nothing calls, lexdrift for one word per idea, a
 lockfile check. `just hygiene` looks for typos.
 
 Before a release, `just mutate` changes the code one small way at a time and checks
-that a test fails each time. Every mutant is killed today; a survivor is a behaviour no
-test pins down, or a change that cannot alter any result, marked
-`# pragma: no mutate` with the reason.
+that a test fails each time. A survivor is a behaviour no test pins down, or a change
+that cannot alter any result, marked `# pragma: no mutate` with the reason. The core
+kills every mutant; the rest is in progress (ROADMAP.md).
 
 ## Tests
 

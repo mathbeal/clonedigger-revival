@@ -19,6 +19,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.scripts]
+clonedigger = "clonedigger.cli:main"
+
 [project.urls]
 "Original project" = "http://clonedigger.sourceforge.net"
 
