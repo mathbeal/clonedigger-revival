@@ -25,6 +25,7 @@ run.
 from __future__ import annotations
 
 import ast
+import warnings
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Final
 
@@ -223,7 +224,11 @@ def read_source(path: Path, text: str, skipped_prefixes: Sequence[str] = ()) -> 
     Returns:
         The file, with every sequence of statements found in it.
     """
-    module = ast.parse(text, filename=str(path))
+    # Python warns about what the analysed code does (an invalid escape, say), not
+    # about the analysis: those warnings are the business of that code's own checks.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", SyntaxWarning)
+        module = ast.parse(text, filename=str(path))
     reader = _Reader(path, skipped_prefixes)
     reader.body(module.body, ())
     return SourceFile(path, tuple(text.splitlines()), tuple(reader.sequences))

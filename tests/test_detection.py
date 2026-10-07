@@ -164,3 +164,17 @@ def test_a_clone_is_kept_when_its_neighbours_do_not_contain_it() -> None:
     assert without_dominated([around, inner]) == [around, inner]
     containing = Clone((outer_a,), (outer_b,), 0)
     assert without_dominated([containing, inner]) == [containing]
+
+
+@pytest.mark.parametrize("name", ["bottle", "six", "docopt"])
+def test_finds_the_clones_of_the_original_on_real_files(name: str) -> None:
+    """On real files both versions read, the same clones start at the same lines."""
+    path = GOLDEN / "corpus" / f"{name}.py"
+    report = (GOLDEN / "corpus" / f"{name}.cpd.xml").read_text()
+    expected = {
+        frozenset(map(int, pair))
+        for pair in re.findall(r'<file line="(\d+)"[^>]*/>\s*<file line="(\d+)"', report)
+    }
+    clones = find_clones([read_source(path, path.read_text())])
+    found = {frozenset({Span.of(c.first).start, Span.of(c.second).start}) for c in clones}
+    assert found == expected

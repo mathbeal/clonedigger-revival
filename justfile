@@ -83,3 +83,7 @@ fix:
 golden:
     docker run --rm -v "$PWD":/w -w /w python:2.7-slim python tests/golden/au_cases_py2.py > tests/golden/anti_unification.json
     docker run --rm -v "$PWD":/w -w /w python:2.7-slim python tests/golden/suffix_tree_cases_py2.py > tests/golden/suffix_tree.json
+    for name in bottle six docopt; do \
+      docker run --rm -v "$PWD":/w -w /w/legacy/clonedigger python:2.7-slim python clonedigger.py --cpd-output -o /w/tests/golden/corpus/$name.cpd.xml /w/tests/golden/corpus/$name.py > /dev/null; \
+      sed -i.bak 's#/w/tests/golden/corpus/#corpus/#g' tests/golden/corpus/$name.cpd.xml && rm tests/golden/corpus/$name.cpd.xml.bak; \
+    done

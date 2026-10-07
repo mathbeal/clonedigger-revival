@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+<duplication lines="12" tokens="44">
+<file line="2213" path="corpus/bottle.py"/>
+<file line="2085" path="corpus/bottle.py"/>
+<codefragment>
+<![CDATA[
+    def __delattr__(self, key):
+        if key in self:
+            val = self.pop(key)
+            if isinstance(val, self.Namespace):
+                prefix = key + '.'
+                for key in self:
+                    if key.startswith(prefix):
+                        del self[prefix+key]
+    def __call__(self, *a, **ka):
+        depr('Calling ConfDict is deprecated. Use the update() method.') #0.12
+        self.update(*a, **ka)
+        return self
+]]>
+</codefragment>
+</duplication>
+<duplication lines="6" tokens="27">
+<file line="2206" path="corpus/bottle.py"/>
+<file line="2078" path="corpus/bottle.py"/>
+<codefragment>
+<![CDATA[
+        depr('Attribute assignment is deprecated.') #0.12
+        if hasattr(dict, key):
+            raise AttributeError('Read-only attribute.')
+        if key in self and self[key] and isinstance(self[key], self.Namespace):
+            raise AttributeError('Non-empty namespace attribute.')
+        self[key] = value
+]]>
+</codefragment>
+</duplication>
+<duplication lines="5" tokens="22">
+<file line="3334" path="corpus/bottle.py"/>
+<file line="3376" path="corpus/bottle.py"/>
+<codefragment>
+<![CDATA[
+    def render(self, *args, **kwargs):
+        for dictarg in args: kwargs.update(dictarg)
+        _defaults = self.defaults.copy()
+        _defaults.update(kwargs)
+        return self.tpl.render(**_defaults)
+]]>
+</codefragment>
+</duplication>
+</pmd-cpd>

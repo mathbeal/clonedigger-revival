@@ -106,3 +106,9 @@ def test_statements_are_distinct_even_when_equal() -> None:
     first, second = read_source(HERE, "a = 1\na = 1\n").sequences[0]
     assert first.tree == second.tree
     assert first != second
+
+
+def test_warnings_of_the_analysed_code_are_not_raised() -> None:
+    """An invalid escape in the code read is that code's problem, not a warning here."""
+    (sequence,) = read_source(HERE, 'pattern = "\\S"\n').sequences
+    assert sequence[0].tree.label == "Assign"

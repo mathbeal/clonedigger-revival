@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+<duplication lines="6" tokens="21">
+<file line="778" path="corpus/six.py"/>
+<file line="784" path="corpus/six.py"/>
+<codefragment>
+<![CDATA[
+        sep = kwargs.pop("sep", None)
+        if sep is not None:
+            if isinstance(sep, unicode):
+                want_unicode = True
+            elif not isinstance(sep, str):
+                raise TypeError("sep must be None or a string")
+]]>
+</codefragment>
+</duplication>
+<duplication lines="6" tokens="21">
+<file line="616" path="corpus/six.py"/>
+<file line="619" path="corpus/six.py"/>
+<codefragment>
+<![CDATA[
+    def iterkeys(d, **kw):
+        return d.iterkeys(**kw)
+    def itervalues(d, **kw):
+        return d.itervalues(**kw)
+    def iteritems(d, **kw):
+        return d.iteritems(**kw)
+]]>
+</codefragment>
+</duplication>
+</pmd-cpd>
