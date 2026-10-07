@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
 from clonedigger.detection import Settings, find_clones
+from clonedigger.html_report import as_html
 from clonedigger.python_frontend import read_source
 from clonedigger.report import as_json, as_sarif, as_text
 
@@ -33,7 +34,10 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("paths", nargs="+", type=Path, help="Python files or directories")
     parser.add_argument(
-        "--format", choices=tuple(REPORTS), default="text", help="report format (default text)"
+        "--format",
+        choices=(*REPORTS, "html"),
+        default="text",
+        help="report format (default text); html is one page, to save and open",
     )
     parser.add_argument(
         "--size-threshold",
@@ -131,7 +135,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         force=options.force,
     )
     clones = find_clones(files, settings)
-    sys.stdout.write(REPORTS[options.format](clones) + "\n")
+    if options.format == "html":
+        sources = {file.path: file.lines for file in files}
+        sys.stdout.write(as_html(clones, sources))
+    else:
+        sys.stdout.write(REPORTS[options.format](clones) + "\n")
     if unreadable:
         return 2
     return 1 if clones else 0

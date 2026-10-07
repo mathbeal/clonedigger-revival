@@ -208,3 +208,11 @@ def test_sarif_report(capsys: pytest.CaptureFixture[str]) -> None:
     assert main([str(INPUTS), "--format", "sarif"]) == 1
     log = json.loads(capsys.readouterr().out)
     assert len(log["runs"][0]["results"]) == 1
+
+
+def test_html_report(capsys: pytest.CaptureFixture[str]) -> None:
+    """--format html prints one page, with the clone of the recorded inputs."""
+    assert main([str(INPUTS), "--format", "html"]) == 1
+    out = capsys.readouterr().out
+    assert out.startswith("<!doctype html>")
+    assert '<h2 id="clone-1">' in out

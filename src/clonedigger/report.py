@@ -75,6 +75,18 @@ class Finding:
     distance: float
 
 
+def largest_first(clones: Sequence[Clone]) -> list[Clone]:
+    """Order the clones by the number of lines of their first copy, largest first.
+
+    Args:
+        clones: The clones found.
+
+    Returns:
+        The same clones; equal sizes keep the order they came in.
+    """
+    return sorted(clones, key=lambda clone: -len(covered_lines(clone.first)))
+
+
 def findings(clones: Sequence[Clone]) -> list[Finding]:
     """Locate the clones, largest first.
 
@@ -82,11 +94,11 @@ def findings(clones: Sequence[Clone]) -> list[Finding]:
         clones: The clones found.
 
     Returns:
-        One finding per clone, ordered by the number of lines of its first copy.
+        One finding per clone, in the order of `largest_first`.
     """
-    ordered = sorted(clones, key=lambda clone: -len(covered_lines(clone.first)))
     return [
-        Finding(Span.of(clone.first), Span.of(clone.second), clone.distance) for clone in ordered
+        Finding(Span.of(clone.first), Span.of(clone.second), clone.distance)
+        for clone in largest_first(clones)
     ]
 
 
