@@ -43,6 +43,13 @@ vocabulary:
 lock:
     uv lock --check
 
+# Where the code is hardest to maintain: functions of complexity C or worse, then the
+# Maintainability Index of each file, lowest first. A report to follow over time, not a
+# gate: radon's grade A starts at 20.
+complexity:
+    uvx radon==6.0.1 cc -s -n C src
+    uvx radon==6.0.1 mi -s src | sort -t'(' -k2 -n
+
 # Typos and the workflows (once there are some).
 hygiene:
     uvx typos .

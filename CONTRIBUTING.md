@@ -37,3 +37,10 @@ the original when it is about faithfulness.
 Conventional commit messages in English, signed off (`git commit -s`): the sign-off
 certifies the Developer Certificate of Origin, that you have the right to submit the
 change under this licence.
+
+## Measures to follow
+
+`just complexity` lists the functions of cyclomatic complexity C or worse, and the
+Maintainability Index of each file, lowest first. Neither blocks a commit (ruff already
+refuses a function above complexity 10); they say where to look first, and a change
+that lowers the index of a file says why in its description.
