@@ -23,7 +23,7 @@ faithful to the original and credited to its authors.
   module; the code moves to Python 3.12 and later, typed and tested.
 - **Left out for now**: the Java, JavaScript and Lua front ends generated with ANTLR,
   the bundled copy of `logilab-astng` and `logilab-common`, and the Eclipse plugin.
-  They remain in the history, in the first commit.
+  They remain under `legacy/`, unmodified, and in the first commit.
 
 Every change to the original is in the git history. The first commit is the 1.1.0
 release, unmodified, recorded under Peter Bulychev's name; see [NOTICE.md](NOTICE.md).
@@ -56,5 +56,5 @@ If you use or study this tool, please cite the original work
 ## Licence
 
 GNU General Public License, version 3 or (at your option) any later version, as the
-original: see [LICENSE.txt](clonedigger/LICENSE.txt). Files taken from Clone Digger keep
+original: see [LICENSE](LICENSE). Files taken from Clone Digger keep
 their original copyright notice; files that are modified say so, with the date.
