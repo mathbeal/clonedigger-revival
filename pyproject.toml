@@ -39,6 +39,7 @@ extend-exclude = ["legacy", "tests/golden"]
 
 [tool.ruff.lint]
 select = ["ALL"]
+preview = true
 ignore = [
     "COM812",  # conflicts with the formatter
     "D203",    # one blank line before a class docstring: D211 is kept
@@ -68,9 +69,57 @@ source = ["src/clonedigger"]
 
 [dependency-groups]
 dev = [
-    "hypothesis>=6.168.5",
-    "mypy>=2.4.0",
-    "pytest>=9.1.1",
-    "pytest-cov>=7.1.0",
-    "ruff>=0.16.10",
+    "deptry==0.25.1",
+    "hypothesis==6.168.5",
+    "mutmut==3.8.0",
+    "mypy==2.4.0",
+    "pylint==4.0.9",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "ruff==0.16.10",
+    "vulture==2.14",
 ]
+
+[tool.pylint.format]
+max-line-length = 100
+
+# A suppression that silences nothing hides the next real finding at that line: refused.
+[tool.pylint."messages control"]
+enable = ["useless-suppression"]
+
+[tool.pylint.main]
+fail-on = ["useless-suppression"]
+ignore-paths = ["^legacy/.*$", "^tests/golden/.*$"]
+
+# Code that nothing calls. Names used only from outside (the public API, dunder
+# methods) are listed in vulture_whitelist.py, each with the reason.
+[tool.vulture]
+paths = ["src", "vulture_whitelist.py"]
+min_confidence = 60
+sort_by_size = true
+
+[tool.deptry]
+known_first_party = ["clonedigger"]
+
+# Mutation testing: change the code a little, one way at a time, and check that some
+# test fails. A mutant that survives is a behaviour no test pins down.
+[tool.mutmut]
+source_paths = ["src/clonedigger/"]
+do_not_mutate = ["src/clonedigger/__init__.py"]
+also_copy = ["tests/golden/"]
+pytest_add_cli_args = ["--no-cov", "-p", "no:cacheprovider"]
+
+[tool.lexdrift.nouns]
+
+# What ruff's docstring rules do not check: arguments in the signature's order, no type
+# in a docstring (the annotation is the only one), summary-only docstrings checked too.
+# Run with `uvx` (just lint), as in avenir-mcp.
+[tool.pydoclint]
+style = "google"
+arg-type-hints-in-docstring = false
+check-return-types = false
+check-yield-types = false
+skip-checking-raises = true
+check-class-attributes = false
+allow-init-docstring = true
+skip-checking-short-docstrings = false

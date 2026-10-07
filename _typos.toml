@@ -1,0 +1,7 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[files]
+# The original release is kept as it was, spelling included; the recorded answers are
+# its output.
+extend-exclude = ["legacy/", "tests/golden/"]

@@ -1,24 +1,76 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # The repository lives in iCloud Drive, which hides the .pth files of a local .venv,
 # and Python 3.14 skips hidden .pth files: the virtual environment lives outside.
 export UV_PROJECT_ENVIRONMENT := env("UV_PROJECT_ENVIRONMENT", home_directory() / ".local/share/clonedigger-dev/venv")
 
-# Lint, types and tests: what must pass before every commit.
-check: lint types test
+# Run `just` to see the recipes.
+default:
+    @just --list
 
+# Install the project and its development tools.
+setup:
+    uv sync
+
+# Every gate, in the order CI will run them.
+check: lint types test deadcode vocabulary lock
+
+# Format, lint (ruff, pylint), Google docstrings complete (pydoclint), dependencies
+# declared and used (deptry).
 lint:
-    uv run ruff format --check src tests
-    uv run ruff check src tests
+    uv run ruff format --check src tests vulture_whitelist.py
+    uv run ruff check src tests vulture_whitelist.py
+    uv run pylint src tests
+    uvx pydoclint==0.10.1 src
+    uv run deptry src
 
 types:
     uv run mypy
 
+# Tests at 100 % of lines and branches.
 test:
     uv run pytest
 
+# Code that nothing calls.
+deadcode:
+    uv run vulture
+
+# One word per idea.
+vocabulary:
+    uvx lexdrift check src
+
+lock:
+    uv lock --check
+
+# Typos and the workflows (once there are some).
+hygiene:
+    uvx typos .
+
+# Mutation testing: slow; run before a release, and read what survives.
+mutate:
+    uv run mutmut run
+    uv run mutmut results
+
+# Every Hypothesis property with EXAMPLES examples instead of 100.
+fuzz examples="50000":
+    CLONEDIGGER_FUZZ_EXAMPLES={{examples}} uv run pytest -o addopts="" -p no:cacheprovider -q --hypothesis-profile=fuzz
+
+# Known vulnerabilities in the locked dependencies.
+audit:
+    uv export --frozen --no-emit-project --all-groups -o /tmp/clonedigger-req.txt
+    uvx pip-audit --strict --disable-pip -r /tmp/clonedigger-req.txt
+
+# Build the wheel and the sdist, dated by the last commit, and check them.
+build:
+    rm -rf dist
+    SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)" uv build
+    uv run --no-project --with twine twine check --strict dist/*
+
 # Reformat.
 fix:
-    uv run ruff check --fix src tests
-    uv run ruff format src tests
+    uv run ruff check --fix src tests vulture_whitelist.py
+    uv run ruff format src tests vulture_whitelist.py
 
 # Record again what the original 1.1.0 answers (needs Docker).
 golden:
