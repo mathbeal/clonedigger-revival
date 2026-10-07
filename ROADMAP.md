@@ -9,8 +9,8 @@ Each step ends with `just check` green and every mutant killed.
    finds the clone the original found on `tests/golden/inputs/`, at the same lines.
 4. **Done in part: the command line**, with text and JSON reports. To come: SARIF for
    code scanning tools, then the HTML report of the original.
-   **Open: mutation testing** of the front end and the pipeline, 646 of 797 mutants
-   killed (81 %); most survivors are help texts of the command line.
+   **Done: mutation testing** of the whole package: all 743 mutants are caught, 741
+   by a failing test and 2 by a time-out (they make refinement loop forever).
 5. **Measure.** Compare with pylint `duplicate-code` and jscpd on real projects, and
    show the clones only anti-unification finds. Profile the quadratic parts.
 6. **Publish**, with the original author's agreement on the name: continuous

@@ -8,7 +8,9 @@ from __future__ import annotations
 from pathlib import Path
 from textwrap import dedent
 
-from clonedigger.python_frontend import read_source
+import pytest
+
+from clonedigger.python_frontend import STATEMENTS_LABEL, read_source
 
 HERE = Path("example.py")
 
@@ -112,3 +114,35 @@ def test_warnings_of_the_analysed_code_are_not_raised() -> None:
     """An invalid escape in the code read is that code's problem, not a warning here."""
     (sequence,) = read_source(HERE, 'pattern = "\\S"\n').sequences
     assert sequence[0].tree.label == "Assign"
+
+
+def test_lists_of_statements_keep_the_original_label() -> None:
+    """A body is a Stmt node, as the compiler module of Python 2 named it."""
+    assert STATEMENTS_LABEL == "Stmt"
+    (function,) = read_source(HERE, "def f():\n    return 1\n").sequences[-1]
+    assert [child.label for child in function.tree.children] == ["'f'", "arguments", "Stmt"]
+
+
+def test_other_targets_keep_their_own_label() -> None:
+    """A subscript being assigned keeps its label: only names and attributes change."""
+    (sequence,) = read_source(HERE, "a[0] = 1\n").sequences
+    assert sequence[0].tree.children[0].label == "Subscript"
+
+
+def test_statements_inside_a_handler_know_where_they_sit() -> None:
+    """A statement in an except clause lists the try statement among its ancestors."""
+    source = read_source(HERE, "try:\n    a = 1\nexcept ValueError:\n    b = 2\n")
+    handled = next(seq for seq in source.sequences if 4 in seq[0].covered_lines)[0]
+    assert [ancestor.tree.label for ancestor in handled.ancestors] == ["Try"]
+
+
+def test_a_file_remembers_its_path() -> None:
+    """The parsed file keeps the path it was read from."""
+    assert read_source(HERE, "a = 1\n").path == HERE
+
+
+def test_syntax_errors_name_the_file() -> None:
+    """A file that does not parse is named in the error."""
+    with pytest.raises(SyntaxError) as error:
+        read_source(HERE, "def (:\n")
+    assert error.value.filename == str(HERE)

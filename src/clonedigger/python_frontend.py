@@ -47,6 +47,9 @@ SKIPPED_FIELDS: Final = frozenset({"type_comment", "type_params", "ctx", "kind"}
 SIGNATURE_FIELDS: Final = {"arg": frozenset({"annotation"}), "FunctionDef": frozenset({"returns"})}
 SIGNATURE_FIELDS["AsyncFunctionDef"] = SIGNATURE_FIELDS["FunctionDef"]
 
+# The node that holds a list of statements, as the compiler module of Python 2 named it.
+STATEMENTS_LABEL: Final = "Stmt"
+
 # Expression contexts that turn a name or an attribute into an assignment target, labelled
 # as the compiler module of Python 2 labelled them.
 STORE_LABELS: Final = {"Name": "AssName", "Attribute": "AssAttr"}
@@ -90,6 +93,9 @@ class SourceFile:
     path: Path
     lines: tuple[str, ...]
     sequences: tuple[tuple[Statement, ...], ...]
+
+
+_UNBUILT: Final = Node("")
 
 
 def _is_docstring(statement: ast.stmt) -> bool:
@@ -143,7 +149,7 @@ class _Reader:
         sequence = [self.statement(item, ancestors) for item in statements if self.kept(item)]
         if sequence:
             self.sequences.append(tuple(sequence))
-        return Node("Stmt", (item.tree for item in sequence))
+        return Node(STATEMENTS_LABEL, (item.tree for item in sequence))
 
     def statement(self, node: ast.stmt, ancestors: tuple[Statement, ...]) -> Statement:
         """Build one statement; the statements nested in it record their own sequences.
@@ -155,7 +161,9 @@ class _Reader:
         Returns:
             The statement.
         """
-        statement = Statement(Node("pending"), self.path, ancestors)
+        # The statement must exist before its tree, since the statements nested in it
+        # name it among their ancestors: it starts with an empty tree.
+        statement = Statement(_UNBUILT, self.path, ancestors)  # pragma: no mutate
         statement.tree = self.tree(node, (statement, *ancestors))
         return statement
 
@@ -170,8 +178,8 @@ class _Reader:
             The node, with its children in the order of the ast fields.
         """
         label = type(node).__name__
-        if isinstance(getattr(node, "ctx", None), (ast.Store, ast.Del)):
-            label = STORE_LABELS.get(label, label)
+        if isinstance(getattr(node, "ctx", None), (ast.Store, ast.Del)) and label in STORE_LABELS:
+            label = STORE_LABELS[label]
         lines = [node.lineno] if isinstance(node, (ast.stmt, ast.expr)) else []
         return Node(label, self.children(node, ancestors), lines)
 
@@ -186,15 +194,16 @@ class _Reader:
             A `Stmt` node for a list of statements, a tree or a leaf for anything else.
         """
         skipped = SKIPPED_FIELDS | SIGNATURE_FIELDS.get(type(node).__name__, frozenset())
-        for name, value in ast.iter_fields(node):
-            if name in skipped:
-                continue
+        fields = ((name, value) for name, value in ast.iter_fields(node) if name not in skipped)
+        for _, value in fields:
             if isinstance(value, list) and value and isinstance(value[0], ast.stmt):
                 yield self.body(value, ancestors)
             elif isinstance(value, list):
                 yield from (self.child(item, ancestors) for item in value)
             else:
-                yield self.child(value, ancestors)
+                # No single field holds statements (only lists do), so the ancestors
+                # passed here never reach a statement; they are passed for clarity.
+                yield self.child(value, ancestors)  # pragma: no mutate
 
     def child(self, value: object, ancestors: tuple[Statement, ...]) -> Node:
         """Build one child: a tree for a node, a leaf holding the text of anything else.
@@ -227,7 +236,8 @@ def read_source(path: Path, text: str, skipped_prefixes: Sequence[str] = ()) -> 
     # Python warns about what the analysed code does (an invalid escape, say), not
     # about the analysis: those warnings are the business of that code's own checks.
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", SyntaxWarning)
+        # Only SyntaxWarning is raised while parsing; naming it keeps others visible.
+        warnings.simplefilter("ignore", SyntaxWarning)  # pragma: no mutate
         module = ast.parse(text, filename=str(path))
     reader = _Reader(path, skipped_prefixes)
     reader.body(module.body, ())

@@ -9,15 +9,16 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 from clonedigger.detection import Settings, find_clones
 from clonedigger.python_frontend import read_source
 from clonedigger.report import as_json, as_text
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Sequence
+    from collections.abc import Callable, Iterator, Sequence
 
+    from clonedigger.detection import Clone
     from clonedigger.python_frontend import SourceFile
 
 
@@ -31,7 +32,9 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("paths", nargs="+", type=Path, help="Python files or directories")
-    parser.add_argument("--format", choices=("text", "json"), default="text")
+    parser.add_argument(
+        "--format", choices=tuple(REPORTS), default="text", help="report format (default text)"
+    )
     parser.add_argument(
         "--size-threshold",
         type=int,
@@ -59,11 +62,20 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--force", action="store_true", help="keep long runs of similar statements")
     parser.add_argument(
         "--func-prefixes",
-        default="",
+        type=_prefixes,
+        default=(),
         help="comma-separated prefixes of function names to leave out, such as test_",
     )
     parser.add_argument("--ignore-dir", action="append", default=[], help="directory name to skip")
     return parser
+
+
+# What --format names, and the function that writes it.
+REPORTS: Final[dict[str, Callable[[Sequence[Clone]], str]]] = {"text": as_text, "json": as_json}
+
+
+def _prefixes(text: str) -> tuple[str, ...]:
+    return tuple(prefix.strip() for prefix in text.split(",") if prefix.strip())
 
 
 def python_files(paths: Sequence[Path], ignored: Sequence[str]) -> Iterator[Path]:
@@ -81,7 +93,7 @@ def python_files(paths: Sequence[Path], ignored: Sequence[str]) -> Iterator[Path
             yield from sorted(
                 file
                 for file in path.rglob("*.py")
-                if not ignored or not set(file.relative_to(path).parts[:-1]) & set(ignored)
+                if not set(file.relative_to(path).parts[:-1]) & set(ignored)
             )
         else:
             yield path
@@ -98,15 +110,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         file.
     """
     options = _parser().parse_args(argv)
-    prefixes = tuple(prefix.strip() for prefix in options.func_prefixes.split(",") if prefix)
     files: list[SourceFile] = []
-    status = 0
+    unreadable = False  # pragma: no mutate - None would be just as false
     for path in python_files(options.paths, options.ignore_dir):
         try:
-            files.append(read_source(path, path.read_text(encoding="utf-8"), prefixes))
+            text = path.read_text(encoding="utf-8")  # pragma: no mutate - "UTF-8" is the same
+            files.append(read_source(path, text, options.func_prefixes))
         except (OSError, SyntaxError, UnicodeDecodeError) as error:
             sys.stderr.write(f"clonedigger: cannot read {path}: {error}\n")
-            status = 2
+            unreadable = True
     settings = Settings(
         size_threshold=options.size_threshold,
         distance_threshold=options.distance_threshold,
@@ -115,5 +127,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         force=options.force,
     )
     clones = find_clones(files, settings)
-    sys.stdout.write((as_json(clones) if options.format == "json" else as_text(clones)) + "\n")
-    return status or (1 if clones else 0)
+    sys.stdout.write(REPORTS[options.format](clones) + "\n")
+    if unreadable:
+        return 2
+    return 1 if clones else 0

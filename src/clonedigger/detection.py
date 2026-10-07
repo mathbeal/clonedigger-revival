@@ -20,8 +20,9 @@ The thresholds keep their meaning and their default values. They are passed as
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import groupby
 from operator import itemgetter
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from clonedigger.anti_unification import Cluster, anti_unify
 from clonedigger.suffix_tree import SuffixTree
@@ -36,6 +37,9 @@ if TYPE_CHECKING:
 # the first with the same mark: such runs (long lists of similar assignments) match
 # each other everywhere and say nothing.
 MAX_EQUAL_MARKS = 10
+
+# The root that joins a run of statements, as Clone Digger 1.1.0 named it.
+SEQUENCE_LABEL = "__SEQUENCE__"
 
 
 @dataclass(frozen=True)
@@ -116,12 +120,23 @@ def sequence_tree(sequence: Sequence[Statement]) -> Node:
         sequence: The statements.
 
     Returns:
-        A node labelled `__SEQUENCE__` whose children are the statements' trees.
+        A node labelled `SEQUENCE_LABEL` whose children are the statements' trees.
     """
-    return Node("__SEQUENCE__", (statement.tree for statement in sequence))
+    return Node(SEQUENCE_LABEL, (statement.tree for statement in sequence))
 
 
-def _buckets(sequences: Sequence[Sequence[Statement]], depth: int) -> dict[int, list[Statement]]:
+def buckets_by_shape(
+    sequences: Sequence[Sequence[Statement]], depth: int
+) -> dict[int, list[Statement]]:
+    """Put the statements of the same rough shape together.
+
+    Args:
+        sequences: The statement sequences.
+        depth: How deep `dcup_hash` looks.
+
+    Returns:
+        The statements, by their rough hash, in the order they come.
+    """
     buckets: dict[int, list[Statement]] = {}
     for sequence in sequences:
         for statement in sequence:
@@ -129,7 +144,19 @@ def _buckets(sequences: Sequence[Sequence[Statement]], depth: int) -> dict[int, 
     return buckets
 
 
-def _build_clusters(statements: Sequence[Statement], threshold: int) -> list[Cluster]:
+def build_clusters(statements: Sequence[Statement], threshold: int) -> list[Cluster]:
+    """Build clusters of statements around common patterns.
+
+    Each statement joins the cluster it costs least to widen, if that cost is at most
+    `threshold`; otherwise it starts a cluster of its own.
+
+    Args:
+        statements: The statements of one bucket, in order.
+        threshold: The largest cost of joining a cluster.
+
+    Returns:
+        The clusters, in the order they were started.
+    """
     clusters: list[Cluster] = []
     for statement in statements:
         costs = [(cluster.add_cost(statement.tree), cluster) for cluster in clusters]
@@ -176,25 +203,17 @@ def drop_long_equal_runs(sequences: Sequence[Sequence[Statement]]) -> list[list[
     """
     kept_sequences: list[list[Statement]] = []
     for sequence in sequences:
-        kept: list[Statement | None] = list(sequence)
-        current: object = None
-        repeats = 0
-        start = 0
-        for index, statement in enumerate(sequence):
-            if statement.mark is not current:
-                current, repeats, start = statement.mark, 0, index
+        piece: list[Statement] = []
+        for _, group in groupby(sequence, key=lambda statement: id(statement.mark)):
+            run = list(group)
+            if len(run) <= MAX_EQUAL_MARKS + 1:
+                piece.extend(run)
                 continue
-            repeats += 1
-            if repeats > MAX_EQUAL_MARKS:
-                kept[start : index + 1] = [None] * (index + 1 - start)
-        run: list[Statement] = []
-        for item in [*kept, None]:
-            if item is None:
-                if run:
-                    kept_sequences.append(run)
-                run = []
-            else:
-                run.append(item)
+            if piece:
+                kept_sequences.append(piece)
+            piece = []
+        if piece:
+            kept_sequences.append(piece)
     return kept_sequences
 
 
@@ -205,8 +224,9 @@ def _candidates(
         return statement.mark
 
     def weight(code: Hashable) -> float:
-        # A run is as heavy as the largest statement each of its clusters has received.
-        return code.max_covered_lines if isinstance(code, Cluster) else 0
+        # A run is as heavy as the largest statement each of its clusters has received;
+        # every mark is a cluster.
+        return cast("Cluster", code).max_covered_lines  # pragma: no mutate - cast does nothing
 
     tree: SuffixTree[Statement] = SuffixTree(mark_of)
     for sequence in sequences:
@@ -239,12 +259,14 @@ def refine(
                 continue
             start, clone = found
             clones.append(clone)
-            # Clone Digger 1.1.0 searched first[:start - 1] here, which left out the
-            # statement just before the window: the whole part before it is searched.
-            if start > 0:
-                candidates.append((first[:start], second[:start]))
-            if start + length < len(first):
-                candidates.append((first[start + length :], second[start + length :]))
+            # What lies on each side of the window is searched again. Clone Digger 1.1.0
+            # searched first[:start - 1] before it, which left out the statement just
+            # before the window.
+            end = start + length
+            before = (first[:start], second[:start])
+            after = (first[end:], second[end:])
+            # Both sides of a part have the same length: testing one is enough.
+            candidates.extend(part for part in (before, after) if part[0])  # pragma: no mutate
             break
     return clones
 
@@ -252,7 +274,10 @@ def refine(
 def _closest_window(
     first: tuple[Statement, ...], second: tuple[Statement, ...], length: int, settings: Settings
 ) -> tuple[int, Clone] | None:
-    for start in range(len(first) - length + 1):
+    # The starts of every window of `length` statements. A mutated bound would add
+    # shorter windows at the end, which a later, shorter length tries anyway.
+    starts = range(len(first) - length + 1)  # pragma: no mutate
+    for start in starts:
         one, other = first[start : start + length], second[start : start + length]
         if min(len(covered_lines(one)), len(covered_lines(other))) < settings.size_threshold:
             continue
@@ -306,9 +331,9 @@ def find_clones(files: Sequence[SourceFile], settings: Settings | None = None) -
         for sequence in file.sequences
         if len(covered_lines(sequence)) >= settings.size_threshold
     ]
-    buckets = _buckets(sequences, settings.hashing_depth)
+    buckets = buckets_by_shape(sequences, settings.hashing_depth)
     for statements in buckets.values():
-        mark_statements(statements, _build_clusters(statements, settings.clustering_threshold))
+        mark_statements(statements, build_clusters(statements, settings.clustering_threshold))
     if not settings.force:
         sequences = drop_long_equal_runs(sequences)
     candidates = _candidates(sequences, settings.size_threshold)

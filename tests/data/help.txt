@@ -1,0 +1,28 @@
+usage: clonedigger [-h] [--format {text,json}] [--size-threshold SIZE_THRESHOLD]
+                   [--distance-threshold DISTANCE_THRESHOLD]
+                   [--clustering-threshold CLUSTERING_THRESHOLD] [--hashing-depth HASHING_DEPTH]
+                   [--force] [--func-prefixes FUNC_PREFIXES] [--ignore-dir IGNORE_DIR]
+                   paths [paths ...]
+
+Find duplicated code by anti-unification. Clone Digger by Peter Bulychev, with Marius Minea;
+ported to Python 3.
+
+positional arguments:
+  paths                 Python files or directories
+
+options:
+  -h, --help            show this help message and exit
+  --format {text,json}  report format (default text)
+  --size-threshold SIZE_THRESHOLD
+                        fewest lines a clone spans (default 5)
+  --distance-threshold DISTANCE_THRESHOLD
+                        largest difference between the two copies (default 5)
+  --clustering-threshold CLUSTERING_THRESHOLD
+                        largest cost of joining a cluster (default 10)
+  --hashing-depth HASHING_DEPTH
+                        how deep statements are hashed into buckets (default 1)
+  --force               keep long runs of similar statements
+  --func-prefixes FUNC_PREFIXES
+                        comma-separated prefixes of function names to leave out, such as test_
+  --ignore-dir IGNORE_DIR
+                        directory name to skip

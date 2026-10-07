@@ -14,13 +14,18 @@ import pytest
 from clonedigger.anti_unification import Cluster
 from clonedigger.detection import (
     MAX_EQUAL_MARKS,
+    SEQUENCE_LABEL,
     Clone,
     Settings,
+    buckets_by_shape,
+    build_clusters,
+    covered_lines,
     dcup_hash,
     drop_long_equal_runs,
     find_clones,
     mark_statements,
     refine,
+    sequence_tree,
     without_dominated,
 )
 from clonedigger.python_frontend import Statement, read_source
@@ -212,3 +217,119 @@ def test_marking_gives_a_statement_to_its_closest_cluster_only() -> None:
     assert statement.mark is near
     assert len(far) == 1
     assert len(near) == 2
+
+
+def test_rough_hash_follows_the_formula_of_the_original() -> None:
+    """Root label times depth times arity, plus children weighted by their position."""
+    name, const = Node("Name", (Node("'x'"),)), Node("Constant", (Node("1"),))
+    tree = Node("Assign", (name, const))
+    level_0 = [hash(1 * hash("Name") * 1), hash(1 * hash("Constant") * 1)]
+    expected = hash(2 * hash("Assign") * 2 + 1 * level_0[0] + 2 * level_0[1])
+    assert dcup_hash(tree, 1) == expected
+    assert dcup_hash(tree, 0) == hash(1 * hash("Assign") * 2)
+
+
+def test_a_run_of_statements_is_joined_under_the_original_label() -> None:
+    """The root of a run keeps the name Clone Digger 1.1.0 gave it."""
+    assert SEQUENCE_LABEL == "__SEQUENCE__"
+    statement = assignment("a", 1, "a.py")
+    joined = sequence_tree([statement])
+    assert joined.label == SEQUENCE_LABEL
+    assert joined.children == (statement.tree,)
+
+
+def test_buckets_group_statements_by_shape_in_order() -> None:
+    """Same shape, same bucket, in the order the statements come."""
+    first, second = assignment("a", 1, "a.py"), assignment("b", 2, "a.py")
+    call = Statement(Node("Call", (Node("f"),), lines={3}), Path("a.py"))
+    buckets = buckets_by_shape([[first, call, second]], 1)
+    assert sorted(map(len, buckets.values())) == [1, 2]
+    assert [first, second] in buckets.values()
+
+
+def test_a_statement_joins_a_cluster_at_exactly_the_threshold() -> None:
+    """Joining costs at most the threshold; one more and a new cluster starts."""
+
+    def wide(prefix: str, count: int) -> Statement:
+        leaves = tuple(Node(f"{prefix}{index}") for index in range(count))
+        return Statement(Node("Call", leaves), Path("a.py"))
+
+    # Ten distinct leaves against ten others cost 10 * 0.5 + 10 * 0.5.
+    assert len(build_clusters([wide("a", 10), wide("b", 10)], 10)) == 1
+    assert len(build_clusters([wide("a", 10), wide("b", 10)], 9)) == 2
+
+
+def test_refining_searches_the_part_after_the_window() -> None:
+    """A clone after the chosen window is found too."""
+    first = (renamed(0, 1, "a"), renamed(9, 2, "a"), renamed(0, 3, "a"))
+    second = (renamed(0, 1, "b"), renamed(9, 2, "b"), renamed(0, 3, "b"))
+    clones = refine([(first, second)], Settings(size_threshold=1))
+    found = [clone.first for clone in clones]
+    assert len(found) == 2
+    assert first[:1] in found
+    assert first[2:] in found
+
+
+def test_refining_skips_small_windows_and_goes_on() -> None:
+    """A window too short in lines is passed over, and the next one is tried."""
+
+    def spread(lines: set[int], side: str) -> Statement:
+        return Statement(Node("Pass", lines=lines), Path(f"{side}.py"))
+
+    first = (spread({1}, "a"), spread({2, 3, 4}, "a"), spread({5, 6, 7}, "a"))
+    second = (spread({1}, "b"), spread({2, 3, 4}, "b"), spread({5, 6, 7}, "b"))
+    clones = refine([(first, second)], Settings(size_threshold=5))
+    assert [clone.first for clone in clones] == [first]
+    shorter = refine([(first[1:], second[1:])], Settings(size_threshold=5))
+    assert [clone.first for clone in shorter] == [first[1:]]
+    tail = (spread({1}, "a"), spread({2}, "a"), spread({3, 4, 5, 6, 7}, "a"))
+    other = (spread({1}, "b"), spread({9}, "b"), spread({3, 4, 5, 6, 7}, "b"))
+    assert [c.first for c in refine([(tail, other)], Settings(size_threshold=5))] == [tail]
+
+
+def test_dominance_looks_at_the_other_side_of_the_enclosing_clone() -> None:
+    """An ancestor found on the second side of a clone points to its first side."""
+    outer_a = assignment("x", 1, "a.py")
+    outer_b = assignment("x", 1, "b.py")
+    inner_a = Statement(Node("y", lines={2}), Path("a.py"), ancestors=(outer_a,))
+    inner_b = Statement(Node("y", lines={2}), Path("b.py"), ancestors=(outer_b,))
+    enclosing = Clone((outer_b,), (outer_a,), 0)
+    inner = Clone((inner_a,), (inner_b,), 0)
+    assert without_dominated([enclosing, inner]) == [enclosing]
+
+
+def test_sequences_of_exactly_the_size_threshold_are_kept() -> None:
+    """A copy spanning exactly the threshold in lines is a clone."""
+    clones = find_clones(golden_files(), Settings(size_threshold=6))
+    assert len(clones) == 1
+    assert len(covered_lines(clones[0].first)) == 6
+
+
+def test_unrefined_candidates_keep_both_copies() -> None:
+    """With distance -1, each candidate has its two copies, from the two places."""
+    for clone in find_clones(golden_files(), Settings(distance_threshold=-1)):
+        assert clone.first
+        assert clone.second
+        assert clone.first[0] is not clone.second[0]
+
+
+def test_a_small_first_window_does_not_stop_the_search() -> None:
+    """A window too short in lines is skipped, and the next one of that length is tried."""
+
+    def statement(leaves: int, lines: set[int], side: str) -> Statement:
+        names = tuple(Node(f"{side}{line}_{index}") for index in range(leaves) for line in lines)
+        return Statement(Node("Call", names, lines=lines), Path(f"{side}.py"))
+
+    first = (statement(9, {1}, "a"), statement(0, {2, 3, 4}, "a"), statement(0, {5, 6, 7}, "a"))
+    second = (statement(9, {1}, "b"), statement(0, {2, 3, 4}, "b"), statement(0, {5, 6, 7}, "b"))
+    # All three differ by 9; the first two span 4 lines, too few; the last two are kept.
+    clones = refine([(first, second)], Settings(size_threshold=5))
+    assert [clone.first for clone in clones] == [first[1:]]
+
+
+def test_sequences_spanning_exactly_the_threshold_take_part() -> None:
+    """A body of exactly size_threshold lines can be a clone."""
+    module = "b = {a}\nc = b\nd = c\ne = d\nf = e\n"
+    files = [read_source(Path(f"{n}.py"), module.format(a=n)) for n in ("x", "y")]
+    assert len(find_clones(files, Settings(size_threshold=5))) == 1
+    assert find_clones(files, Settings(size_threshold=6)) == []
