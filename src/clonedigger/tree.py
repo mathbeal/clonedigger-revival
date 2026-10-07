@@ -56,7 +56,7 @@ class Node:
     def __eq__(self, other: object) -> bool:
         if self is other:
             return True
-        if type(other) is not Node:
+        if isinstance(other, Variable) or not isinstance(other, Node):
             return False
         return (
             self._hash == other._hash
@@ -123,11 +123,11 @@ class Variable(Node):
 
     __slots__ = ()
 
-    _counter: Final = itertools.count(1)
+    _COUNTER: Final = itertools.count(1)
 
     def __init__(self) -> None:
         """Make a new variable, distinct from every other."""
-        super().__init__(f"X{next(Variable._counter)}")
+        super().__init__(f"X{next(Variable._COUNTER)}")
 
     @override
     def __eq__(self, other: object) -> bool:

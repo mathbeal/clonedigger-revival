@@ -24,7 +24,8 @@ def test_equality_needs_same_label_and_children() -> None:
 def test_a_variable_equals_only_itself() -> None:
     """Variables never match each other, nor a node that has their name."""
     first, second = Variable(), Variable()
-    assert first == first  # noqa: PLR0124 - equality with itself is the point
+    same = first
+    assert first == same
     assert first != second
     assert first != Node(first.label)
     assert Node(first.label) != first
@@ -60,3 +61,13 @@ def test_measures_are_computed_once() -> None:
     node = Node("Add", (Node("a", lines={1}), Node("b", lines={2})))
     assert node.covered_lines is node.covered_lines
     assert node.size == node.size == 2
+
+
+def test_different_trees_hash_apart() -> None:
+    """Different labels or children give different hashes, so dictionaries stay fast."""
+    assert len({hash(Node("a")), hash(Node("b")), hash(Node("Add", (Node("a"),)))}) == 3
+
+
+def test_variables_are_named_for_display() -> None:
+    """A variable shows as X followed by a number."""
+    assert Variable().label.startswith("X")

@@ -118,5 +118,23 @@
    "sabct", 
    "uabcv"
   ]
+ }, 
+ "zero_threshold": {
+  "pairs": [
+   [
+    "b", 
+    "b"
+   ], 
+   [
+    "c", 
+    "c"
+   ]
+  ], 
+  "threshold": 0, 
+  "words": [
+   "ab", 
+   "cd", 
+   "cb"
+  ]
  }
 }

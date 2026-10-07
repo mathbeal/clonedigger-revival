@@ -19,29 +19,39 @@ GOLDEN = json.loads((Path(__file__).parent / "golden" / "anti_unification.json")
 
 
 def tree(label: str, *children: Node) -> Node:
-    """A node, written the way the reference script writes it."""
+    """Build a node the way the reference script writes it.
+
+    Returns:
+        The node.
+    """
     return Node(label, children)
 
 
-T = tree
 CASES = {
     "rename_and_constant": (
-        T("Assign", T("total"), T("Mult", T("prix"), T("1.2"))),
-        T("Assign", T("remise"), T("Mult", T("prix"), T("0.9"))),
+        tree("Assign", tree("total"), tree("Mult", tree("prix"), tree("1.2"))),
+        tree("Assign", tree("remise"), tree("Mult", tree("prix"), tree("0.9"))),
     ),
-    "same_difference_twice": (T("Add", T("a"), T("a")), T("Add", T("b"), T("b"))),
-    "two_differences": (T("Add", T("a"), T("a")), T("Add", T("b"), T("c"))),
-    "identical": (T("Call", T("f"), T("x")), T("Call", T("f"), T("x"))),
-    "different_shape": (T("Call", T("f"), T("x")), T("Call", T("f"), T("x"), T("y"))),
+    "same_difference_twice": (tree("Add", tree("a"), tree("a")), tree("Add", tree("b"), tree("b"))),
+    "two_differences": (tree("Add", tree("a"), tree("a")), tree("Add", tree("b"), tree("c"))),
+    "identical": (tree("Call", tree("f"), tree("x")), tree("Call", tree("f"), tree("x"))),
+    "different_shape": (
+        tree("Call", tree("f"), tree("x")),
+        tree("Call", tree("f"), tree("x"), tree("y")),
+    ),
     "subtree_differs": (
-        T("Return", T("Mult", T("a"), T("b"))),
-        T("Return", T("Add", T("a"), T("b"))),
+        tree("Return", tree("Mult", tree("a"), tree("b"))),
+        tree("Return", tree("Add", tree("a"), tree("b"))),
     ),
 }
 
 
 def show(node: Node) -> str:
-    """Write a tree as the reference script does: every variable is VAR."""
+    """Write a tree as the reference script does.
+
+    Returns:
+        The tree as text, every variable written VAR.
+    """
     if isinstance(node, Variable):
         return "VAR"
     if node.is_leaf:
@@ -102,9 +112,9 @@ def test_a_tree_and_itself_have_no_difference(node: Node) -> None:
 
 
 @given(TREES, TREES)
-def test_distance_is_symmetric(first: Node, second: Node) -> None:
+def test_distance_is_symmetric(one: Node, other: Node) -> None:
     """Swapping the trees swaps the substitutions and keeps the distance."""
-    assert anti_unify(first, second).distance == anti_unify(second, first).distance
+    assert anti_unify(one, other).distance == anti_unify(other, one).distance
 
 
 @given(TREES, TREES)
@@ -124,50 +134,80 @@ def test_substitute_leaves_unknown_variables_alone() -> None:
 
 def test_a_substitution_weighs_what_it_replaces_less_its_holes() -> None:
     """Two distinct leaves replaced by one variable weigh 2 - 0.5."""
-    assert substitution_size({Variable(): Node("Mult", (Node("a"), Node("b")))}) == 1.5
+    assert substitution_size({Variable(): Node("Mult", (Node("a"), Node("b")))}) == pytest.approx(
+        1.5
+    )
 
 
-class TestCluster:
-    """Clusters keep the pattern of their statements, as in Clone Digger 1.1.0."""
+def test_cluster_starts_with_its_first_statement() -> None:
+    """A cluster made from a statement has it as its only member and pattern."""
+    first = Node("Assign", (Node("x"), Node("1")), lines={3})
+    cluster = Cluster(first)
+    assert len(cluster) == 1
+    assert cluster.pattern == first
+    assert cluster.max_covered_lines == 1
 
-    def test_starts_with_its_first_statement(self) -> None:
-        """A cluster made from a statement has it as its only member and pattern."""
-        first = Node("Assign", (Node("x"), Node("1")), lines={3})
-        cluster = Cluster(first)
-        assert len(cluster) == 1
-        assert cluster.pattern == first
-        assert cluster.max_covered_lines == 1
 
-    def test_cost_counts_every_member(self) -> None:
-        """What the pattern loses is paid once per member; the newcomer pays once."""
-        cluster = Cluster(Node("Add", (Node("a"), Node("b"))))
-        cluster.unify(Node("Add", (Node("a"), Node("c"))))
-        newcomer = Node("Add", (Node("d"), Node("c")))
-        # The pattern Add(a, X) loses "a" (1 - 0.5) and keeps X (0.5 - 0.5); the
-        # newcomer brings "d" and "c" for those two holes: 0.5 + 0.5.
-        assert cluster.add_cost(newcomer) == 2 * 0.5 + 1.0
+def test_cluster_cost_counts_every_member() -> None:
+    """What the pattern loses is paid once per member; the newcomer pays once."""
+    cluster = Cluster(Node("Add", (Node("a"), Node("b"))))
+    cluster.unify(Node("Add", (Node("a"), Node("c"))))
+    newcomer = Node("Add", (Node("d"), Node("c")))
+    # The pattern Add(a, X) loses "a" (1 - 0.5) and keeps X (0.5 - 0.5); the
+    # newcomer brings "d" and "c" for those two holes: 0.5 + 0.5.
+    assert cluster.add_cost(newcomer) == pytest.approx(2 * 0.5 + 1.0)
 
-    def test_unify_widens_the_pattern(self) -> None:
-        """After unification the pattern fits both statements."""
-        cluster = Cluster(Node("Add", (Node("a"), Node("b"))))
-        cluster.unify(Node("Add", (Node("a"), Node("c"))))
-        assert len(cluster) == 2
-        assert cluster.pattern is not None
-        assert show(cluster.pattern) == "Add(a, VAR)"
 
-    def test_unify_does_not_count_lines(self) -> None:
-        """Only add_without_unification tracks the largest statement, as in 1.1.0."""
-        cluster = Cluster(Node("x", lines={1}))
-        cluster.unify(Node("y", lines={1, 2, 3}))
-        assert cluster.max_covered_lines == 1
-        cluster.add_without_unification(Node("z", lines={1, 2, 3}))
-        assert cluster.max_covered_lines == 3
+def test_cluster_unify_widens_the_pattern() -> None:
+    """After unification the pattern fits both statements."""
+    cluster = Cluster(Node("Add", (Node("a"), Node("b"))))
+    cluster.unify(Node("Add", (Node("a"), Node("c"))))
+    assert len(cluster) == 2
+    assert cluster.pattern is not None
+    assert show(cluster.pattern) == "Add(a, VAR)"
 
-    def test_without_a_tree_it_only_labels(self) -> None:
-        """A cluster made without a statement has no pattern to compare with."""
-        cluster = Cluster()
-        assert cluster.pattern is None
-        with pytest.raises(ValueError, match="no pattern"):
-            cluster.add_cost(Node("x"))
-        with pytest.raises(ValueError, match="no pattern"):
-            cluster.unify(Node("x"))
+
+def test_cluster_unify_does_not_count_lines() -> None:
+    """Only add_without_unification tracks the largest statement, as in 1.1.0."""
+    cluster = Cluster(Node("x", lines={1}))
+    cluster.unify(Node("y", lines={1, 2, 3}))
+    assert cluster.max_covered_lines == 1
+    cluster.add_without_unification(Node("z", lines={1, 2, 3}))
+    assert cluster.max_covered_lines == 3
+
+
+def test_cluster_without_a_tree_it_only_labels() -> None:
+    """A cluster made without a statement has no pattern to compare with."""
+    cluster = Cluster()
+    assert cluster.pattern is None
+    with pytest.raises(
+        ValueError, match=r"^a cluster made without a tree has no pattern to (compare with|widen)$"
+    ):
+        cluster.add_cost(Node("x"))
+    with pytest.raises(
+        ValueError, match=r"^a cluster made without a tree has no pattern to (compare with|widen)$"
+    ):
+        cluster.unify(Node("x"))
+
+
+def test_cluster_keeps_its_statements_in_order() -> None:
+    """Every statement added, unified or not, is kept, in the order it came."""
+    first, second, third = Node("x"), Node("y"), Node("z")
+    cluster = Cluster(first)
+    cluster.unify(second)
+    cluster.add_without_unification(third)
+    assert cluster.trees == [first, second, third]
+
+
+def test_cluster_without_statement_covers_no_line() -> None:
+    """An empty cluster has covered no line yet."""
+    assert Cluster().max_covered_lines == 0
+
+
+def test_patterns_keep_the_lines_of_the_first_tree() -> None:
+    """The pattern and a rebuilt tree point to the source lines of the first tree."""
+    first = Node("Add", (Node("a", lines={2}), Node("b")), lines={1})
+    second = Node("Add", (Node("a", lines={8}), Node("c")), lines={7})
+    result = anti_unify(first, second)
+    assert result.pattern.lines == {1}
+    assert substitute(result.pattern, result.left).covered_lines == {1, 2}

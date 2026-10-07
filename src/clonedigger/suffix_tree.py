@@ -46,6 +46,9 @@ def _comparisons[T](node: _TrieNode[T]) -> Iterator[tuple[_Position[T], _Positio
     passing through, two strings ending here, and two strings that part ways into
     different children, one element further down.
 
+    Args:
+        node: The node of the trie where the runs meet.
+
     Yields:
         Two positions, and how many elements to step back from them.
     """
@@ -115,7 +118,8 @@ class SuffixTree[T]:
         found: list[tuple[Sequence[T], Sequence[T]]] = []
 
         def keep_if_left_diverse(one: _Position[T], two: _Position[T], back: int) -> None:
-            diverse = one.previous is None or two.previous is None or one.previous != two.previous
+            # A run is left-diverse when it starts a string, or follows different elements.
+            diverse = one.previous is None or one.previous != two.previous
             if diverse and one.position > back:
                 candidate = (one.string[: one.position - back], two.string[: two.position - back])
                 if size(candidate[0]) >= threshold or size(candidate[1]) >= threshold:

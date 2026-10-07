@@ -12,6 +12,7 @@ cases = {
     'no_repeat': (['abc', 'xyz'], 1),
     'three_copies': (['qabcr', 'sabct', 'uabcv'], 3),
     'equal_strings': (['xabc', 'xabc', 'yabc'], 2),
+    'zero_threshold': (['ab', 'cd', 'cb'], 0),
 }
 out = {}
 for name, (words, threshold) in sorted(cases.items()):

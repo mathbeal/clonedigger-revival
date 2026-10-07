@@ -23,6 +23,7 @@ with the same result.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from itertools import starmap
 from typing import TYPE_CHECKING
 
 from clonedigger.tree import VARIABLE_COST, Node, Variable
@@ -117,11 +118,11 @@ def anti_unify(first: Node, second: Node, *, share_variables: bool = True) -> An
 
     def hole(one: Node, other: Node) -> Variable:
         if share_variables and (one, other) in seen:
-            return seen[(one, other)]
+            return seen[one, other]
         variable = Variable()
         left[variable] = one
         right[variable] = other
-        seen[(one, other)] = variable
+        seen[one, other] = variable
         return variable
 
     def walk(one: Node, other: Node) -> Node:
@@ -129,11 +130,10 @@ def anti_unify(first: Node, second: Node, *, share_variables: bool = True) -> An
             return one
         if one.label != other.label or len(one.children) != len(other.children):
             return hole(one, other)
-        return Node(
-            one.label,
-            (walk(a, b) for a, b in zip(one.children, other.children, strict=True)),
-            one.lines,
-        )
+        # Equal lengths were checked just above: strict only guards the invariant, so
+        # mutating it cannot change a result.
+        pairs = zip(one.children, other.children, strict=True)  # pragma: no mutate
+        return Node(one.label, starmap(walk, pairs), one.lines)
 
     return AntiUnification(walk(first, second), left, right)
 
@@ -160,7 +160,11 @@ class Cluster:
             self.add_without_unification(tree)
 
     def __len__(self) -> int:
-        """How many statements the cluster holds."""
+        """Count the statements of the cluster.
+
+        Returns:
+            How many statements the cluster holds.
+        """
         return len(self.trees)
 
     def add_cost(self, tree: Node) -> float:
