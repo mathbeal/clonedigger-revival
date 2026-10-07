@@ -11,10 +11,10 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from importlib.metadata import version
 from pathlib import PurePath
 from typing import TYPE_CHECKING, Final
 
+from clonedigger import __version__
 from clonedigger.detection import covered_lines
 
 if TYPE_CHECKING:
@@ -176,7 +176,7 @@ def as_sarif(clones: Sequence[Clone]) -> str:
     }
     driver = {
         "name": "clonedigger",
-        "version": version("clonedigger-revival"),
+        "version": __version__,
         "informationUri": ORIGINAL_URI,
         "rules": [rule],
     }

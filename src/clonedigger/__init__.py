@@ -9,9 +9,13 @@ in Peter Bulychev and Marius Minea, "Duplicate Code Detection Using
 Anti-Unification", SYRCoSE 2008.
 """
 
+from importlib.metadata import version
+
 from clonedigger.anti_unification import AntiUnification, Cluster, anti_unify, substitute
 from clonedigger.suffix_tree import SuffixTree
 from clonedigger.tree import VARIABLE_COST, Node, Variable
+
+__version__ = version("clonedigger-revival")
 
 __all__ = [
     "VARIABLE_COST",
@@ -20,6 +24,7 @@ __all__ = [
     "Node",
     "SuffixTree",
     "Variable",
+    "__version__",
     "anti_unify",
     "substitute",
 ]

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "clonedigger",
+          "version": "<version>",
+          "informationUri": "http://clonedigger.sourceforge.net",
+          "rules": [
+            {
+              "id": "duplicated-code",
+              "name": "DuplicatedCode",
+              "shortDescription": {
+                "text": "Two runs of statements are copies of one another."
+              },
+              "fullDescription": {
+                "text": "Found by anti-unification: the two copies have the same shape and differ only in a few names, constants or subtrees."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "duplicated-code",
+          "level": "warning",
+          "message": {
+            "text": "Lines 1-8 are a copy of [d.py:20-27](1), up to a difference of 1."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "c.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 8
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 1,
+              "message": {
+                "text": "the other copy"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "d.py"
+                },
+                "region": {
+                  "startLine": 20,
+                  "endLine": 27
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "duplicated-code",
+          "level": "warning",
+          "message": {
+            "text": "Lines 1-5 are a copy of [b.py:10-14](1), up to a difference of 2."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "a.py"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 5
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 1,
+              "message": {
+                "text": "the other copy"
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "b.py"
+                },
+                "region": {
+                  "startLine": 10,
+                  "endLine": 14
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

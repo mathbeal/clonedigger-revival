@@ -10,6 +10,7 @@ from pathlib import Path
 
 import jsonschema
 
+from clonedigger import __version__
 from clonedigger.detection import Clone
 from clonedigger.python_frontend import Statement
 from clonedigger.report import RULE_ID, as_json, as_sarif, as_text, findings
@@ -95,3 +96,18 @@ def test_sarif_reports_each_clone_on_its_first_copy() -> None:
         "Lines 1-8 are a copy of [d.py:20-27](1), up to a difference of 1."
     )
     assert second["locations"][0]["physicalLocation"]["artifactLocation"]["uri"] == "a.py"
+
+
+def test_sarif_is_written_as_recorded() -> None:
+    """Every text of the log, its layout included, is the recorded one.
+
+    After a deliberate change, regenerate tests/data/sarif.json from
+    as_sarif([SMALL, LARGE]), with the tool's version written <version>.
+    """
+    written = json.loads(as_sarif([SMALL, LARGE]))
+    assert written["runs"][0]["tool"]["driver"].pop("version") == __version__
+    expected = (Path(__file__).parent / "data" / "sarif.json").read_text()
+    layout = json.loads(as_sarif([SMALL, LARGE]))
+    layout["runs"][0]["tool"]["driver"]["version"] = "<version>"
+    assert json.dumps(layout, indent=2) + "\n" == expected
+    assert as_sarif([SMALL, LARGE]).startswith('{\n  "$schema"')
