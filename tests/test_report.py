@@ -6,14 +6,15 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
+from typing import cast
 
 import jsonschema
 
 from clonedigger import __version__
 from clonedigger.detection import Clone
 from clonedigger.python_frontend import Statement
-from clonedigger.report import RULE_ID, as_json, as_sarif, as_text, findings
+from clonedigger.report import RULE_ID, Span, as_json, as_sarif, as_text, findings
 from clonedigger.tree import Node
 
 
@@ -111,3 +112,10 @@ def test_sarif_is_written_as_recorded() -> None:
     layout["runs"][0]["tool"]["driver"]["version"] = "<version>"
     assert json.dumps(layout, indent=2) + "\n" == expected
     assert as_sarif([SMALL, LARGE]).startswith('{\n  "$schema"')
+
+
+def test_paths_are_written_with_forward_slashes() -> None:
+    """A Windows path is reported with forward slashes, as on every other system."""
+    windows_path = cast("Path", PureWindowsPath("pkg\\mod.py"))
+    statement = Statement(Node("Pass", lines={3}), windows_path)
+    assert str(Span.of([statement])) == "pkg/mod.py:3-3"

@@ -49,7 +49,8 @@ class Span:
             Their file and the lines they span.
         """
         lines = covered_lines(sequence)
-        return cls(str(sequence[0].path), min(lines), max(lines))
+        # Forward slashes on every system: reports are compared and shared across them.
+        return cls(PurePath(sequence[0].path).as_posix(), min(lines), max(lines))
 
     def __str__(self) -> str:
         """Write the span as path:start-end.
@@ -140,7 +141,7 @@ ORIGINAL_URI: Final = "http://clonedigger.sourceforge.net"
 def _location(span: Span) -> dict[str, object]:
     return {
         "physicalLocation": {
-            "artifactLocation": {"uri": PurePath(span.path).as_posix()},
+            "artifactLocation": {"uri": span.path},
             "region": {"startLine": span.start, "endLine": span.end},
         }
     }
