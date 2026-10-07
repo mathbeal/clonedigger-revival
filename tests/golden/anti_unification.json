@@ -1,0 +1,104 @@
+{
+ "different_shape": {
+  "distance": 4.0, 
+  "pattern": "VAR", 
+  "substitution_sizes": [
+   1.5, 
+   2.5
+  ], 
+  "substitutions": [
+   [
+    "Call(f, x)"
+   ], 
+   [
+    "Call(f, x, y)"
+   ]
+  ], 
+  "variables": 1
+ }, 
+ "identical": {
+  "distance": 0, 
+  "pattern": "Call(f, x)", 
+  "substitution_sizes": [
+   0, 
+   0
+  ], 
+  "substitutions": [
+   [], 
+   []
+  ], 
+  "variables": 0
+ }, 
+ "rename_and_constant": {
+  "distance": 2.0, 
+  "pattern": "Assign(VAR, Mult(prix, VAR))", 
+  "substitution_sizes": [
+   1.0, 
+   1.0
+  ], 
+  "substitutions": [
+   [
+    "1.2", 
+    "total"
+   ], 
+   [
+    "0.9", 
+    "remise"
+   ]
+  ], 
+  "variables": 2
+ }, 
+ "same_difference_twice": {
+  "distance": 1.0, 
+  "pattern": "Add(VAR, VAR)", 
+  "substitution_sizes": [
+   0.5, 
+   0.5
+  ], 
+  "substitutions": [
+   [
+    "a"
+   ], 
+   [
+    "b"
+   ]
+  ], 
+  "variables": 1
+ }, 
+ "subtree_differs": {
+  "distance": 3.0, 
+  "pattern": "Return(VAR)", 
+  "substitution_sizes": [
+   1.5, 
+   1.5
+  ], 
+  "substitutions": [
+   [
+    "Mult(a, b)"
+   ], 
+   [
+    "Add(a, b)"
+   ]
+  ], 
+  "variables": 1
+ }, 
+ "two_differences": {
+  "distance": 2.0, 
+  "pattern": "Add(VAR, VAR)", 
+  "substitution_sizes": [
+   1.0, 
+   1.0
+  ], 
+  "substitutions": [
+   [
+    "a", 
+    "a"
+   ], 
+   [
+    "b", 
+    "c"
+   ]
+  ], 
+  "variables": 2
+ }
+}

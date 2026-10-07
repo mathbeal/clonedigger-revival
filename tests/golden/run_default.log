@@ -1,0 +1,14 @@
+Parsing  inputs/prices.py ... done
+Parsing  inputs/report.py ... done
+7 sequences
+average sequence length: 3.714286
+maximum sequence length: 6
+Number of statements:  26
+Calculating size for each statement... done
+Building statement hash... done
+Number of different hash values:  17
+Building patterns... 18 patterns were discovered
+Choosing pattern for each statement... done
+Finding similar sequences of statements... 2  sequences were found
+Refining candidates... 1 clones were found
+Removing dominated clones... 0 clones were removed

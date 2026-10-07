@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+<duplication lines="6" tokens="26">
+<file line="13" path="inputs/prices.py"/>
+<file line="2" path="inputs/prices.py"/>
+<codefragment>
+<![CDATA[
+    amount = 0
+    for line in lines:
+        cost = line.price * line.quantity
+        if line.discount:
+            cost = cost - line.discount
+        amount = amount + cost
+]]>
+</codefragment>
+</duplication>
+</pmd-cpd>
