@@ -19,7 +19,6 @@ The thresholds keep their meaning and their default values. They are passed as
 
 from __future__ import annotations
 
-import sys
 from dataclasses import dataclass
 from operator import itemgetter
 from typing import TYPE_CHECKING
@@ -142,17 +141,25 @@ def _build_clusters(statements: Sequence[Statement], threshold: int) -> list[Clu
     return clusters
 
 
-def _mark(statements: Sequence[Statement], clusters: Sequence[Cluster]) -> None:
+def mark_statements(statements: Sequence[Statement], clusters: Sequence[Cluster]) -> None:
+    """Label each statement with the cluster whose pattern it is closest to.
+
+    Args:
+        statements: The statements of one bucket.
+        clusters: The clusters built from that bucket.
+    """
     for statement in statements:
-        lowest = sys.float_info.max
-        for cluster in clusters:
-            # Kept from 1.1.0: every cluster that improves on the previous best receives
-            # the statement, which raises its largest number of covered lines.
-            cost = anti_unify(cluster.pattern or statement.tree, statement.tree).distance
-            if cost < lowest:
-                lowest = cost
-                statement.mark = cluster
-                cluster.add_without_unification(statement.tree)
+        # The cluster whose pattern the statement is closest to, the first on a tie.
+        # Clone Digger 1.1.0 also added the statement to every cluster that improved on
+        # the best so far, which inflated their sizes; only the chosen one receives it.
+        distances = [_distance_to(cluster, statement.tree) for cluster in clusters]
+        best = clusters[distances.index(min(distances))]
+        statement.mark = best
+        best.add_without_unification(statement.tree)
+
+
+def _distance_to(cluster: Cluster, tree: Node) -> float:
+    return anti_unify(cluster.pattern or tree, tree).distance
 
 
 def drop_long_equal_runs(sequences: Sequence[Sequence[Statement]]) -> list[list[Statement]]:
@@ -232,9 +239,10 @@ def refine(
                 continue
             start, clone = found
             clones.append(clone)
-            # Kept from 1.1.0: the part before the window loses its last statement.
+            # Clone Digger 1.1.0 searched first[:start - 1] here, which left out the
+            # statement just before the window: the whole part before it is searched.
             if start > 0:
-                candidates.append((first[: start - 1], second[: start - 1]))
+                candidates.append((first[:start], second[:start]))
             if start + length < len(first):
                 candidates.append((first[start + length :], second[start + length :]))
             break
@@ -300,7 +308,7 @@ def find_clones(files: Sequence[SourceFile], settings: Settings | None = None) -
     ]
     buckets = _buckets(sequences, settings.hashing_depth)
     for statements in buckets.values():
-        _mark(statements, _build_clusters(statements, settings.clustering_threshold))
+        mark_statements(statements, _build_clusters(statements, settings.clustering_threshold))
     if not settings.force:
         sequences = drop_long_equal_runs(sequences)
     candidates = _candidates(sequences, settings.size_threshold)

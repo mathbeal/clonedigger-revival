@@ -19,6 +19,7 @@ from clonedigger.detection import (
     dcup_hash,
     drop_long_equal_runs,
     find_clones,
+    mark_statements,
     refine,
     without_dominated,
 )
@@ -178,3 +179,36 @@ def test_finds_the_clones_of_the_original_on_real_files(name: str) -> None:
     clones = find_clones([read_source(path, path.read_text())])
     found = {frozenset({Span.of(c.first).start, Span.of(c.second).start}) for c in clones}
     assert found == expected
+
+
+def renamed(count: int, line: int, side: str) -> Statement:
+    """Build a call whose arguments all differ on the other side.
+
+    Returns:
+        A statement whose anti-unification against its twin costs `count`: each
+        argument is a distinct leaf on each side.
+    """
+    arguments = tuple(Node(f"{side}{line}_{index}") for index in range(count))
+    return Statement(Node("Call", arguments, lines={line}), Path(f"{side}.py"))
+
+
+def test_refining_searches_the_whole_part_before_the_window() -> None:
+    """A clone right before the chosen window is found; 1.1.0 lost its last statement."""
+    first = (renamed(1, 1, "a"), renamed(4, 2, "a"), renamed(0, 3, "a"))
+    second = (renamed(1, 1, "b"), renamed(4, 2, "b"), renamed(0, 3, "b"))
+    # Distances 1, 4 and 0: no window of three passes, the second window of two does,
+    # and what is left before it, the first statement alone, is a clone too.
+    clones = refine([(first, second)], Settings(size_threshold=1))
+    assert sorted(len(clone.first) for clone in clones) == [1, 2]
+    assert any(clone.first == first[:1] for clone in clones)
+
+
+def test_marking_gives_a_statement_to_its_closest_cluster_only() -> None:
+    """The farther cluster tried first does not receive the statement, as it did in 1.1.0."""
+    statement = Statement(Node("Add", (Node("a"), Node("b")), lines={1, 2, 3}), Path("x.py"))
+    far = Cluster(Node("Add", (Node("x"), Node("y"))))
+    near = Cluster(Node("Add", (Node("a"), Node("z"))))
+    mark_statements([statement], [far, near])
+    assert statement.mark is near
+    assert len(far) == 1
+    assert len(near) == 2
