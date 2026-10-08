@@ -25,11 +25,27 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True, slots=True)
 class _Position[T]:
-    """A place in a string: the string, how far into it, and the code just before."""
+    """A place in a suffix of a string, and the code just before that suffix.
+
+    The suffix is not copied: it is `string[start:]`, read when a run is reported.
+    Copying every suffix made the memory grow with the square of a string's length.
+    """
 
     string: Sequence[T]
+    start: int
     position: int
     previous: Hashable | None
+
+    def run(self, length: int) -> Sequence[T]:
+        """Return the run made of the first elements of the suffix.
+
+        Args:
+            length: How many.
+
+        Returns:
+            Them, as a slice of the string.
+        """
+        return self.string[self.start : self.start + length]
 
 
 @dataclass(slots=True)
@@ -89,22 +105,25 @@ class SuffixTree[T]:
         """
         for start in range(len(string)):
             previous = None if start == 0 else self._code(string[start - 1])
-            self._add_suffix(string[start:], previous)
+            self._add_suffix(string, start, previous)
 
-    def _add_suffix(self, suffix: Sequence[T], previous: Hashable | None) -> None:
+    def _add_suffix(self, string: Sequence[T], start: int, previous: Hashable | None) -> None:
         node = self._root
-        for position, element in enumerate(suffix):
-            node.passing.append(_Position(suffix, position, previous))
-            node = node.children.setdefault(self._code(element), _TrieNode())
-        node.ending.append(_Position(suffix, len(suffix), previous))
+        for position in range(len(string) - start):
+            node.passing.append(_Position(string, start, position, previous))
+            node = node.children.setdefault(self._code(string[start + position]), _TrieNode())
+        node.ending.append(_Position(string, start, len(string) - start, previous))
 
-    def best_max_substrings(
+    def iter_best_max_substrings(
         self,
         threshold: float,
         weight: Callable[[Hashable], float],
         size: Callable[[Sequence[T]], float],
-    ) -> list[tuple[Sequence[T], Sequence[T]]]:
-        """Find the pairs of maximal repeated runs that are heavy enough.
+    ) -> Iterator[tuple[Sequence[T], Sequence[T]]]:
+        """Find the pairs of maximal repeated runs that are heavy enough, one at a time.
+
+        On a large code base the pairs number in the millions: yielding them one at a
+        time lets the caller handle each and forget it.
 
         Args:
             threshold: The weight a run must reach, summed along the path from the root.
@@ -112,34 +131,31 @@ class SuffixTree[T]:
             size: The size of a candidate run; a pair is kept when one side reaches
                 `threshold`.
 
-        Returns:
+        Yields:
             Pairs of runs, as slices of the strings that were added.
         """
-        found: list[tuple[Sequence[T], Sequence[T]]] = []
         # The same prefix of a string is weighed again for every string it meets: its
         # size is kept, keyed by the string, which the tree keeps alive, and the length.
-        sizes: dict[tuple[int, int], float] = {}
+        sizes: dict[tuple[int, int, int], float] = {}
 
-        def heavy(string: Sequence[T], length: int) -> bool:
-            key = (id(string), length)
+        def heavy(place: _Position[T], length: int) -> bool:
+            key = (id(place.string), place.start, length)
             if key not in sizes:
-                sizes[key] = size(string[:length])
+                sizes[key] = size(place.run(length))
             return sizes[key] >= threshold
 
-        def keep_if_left_diverse(one: _Position[T], two: _Position[T], back: int) -> None:
-            # A run is left-diverse when it starts a string, or follows different elements.
-            diverse = one.previous is None or one.previous != two.previous
-            if diverse and one.position > back:
-                first, second = one.position - back, two.position - back
-                if heavy(one.string, first) or heavy(two.string, second):
-                    found.append((one.string[:first], two.string[:second]))
-
-        def find_from(node: _TrieNode[T], remaining: float) -> None:
+        def find_from(
+            node: _TrieNode[T], remaining: float
+        ) -> Iterator[tuple[Sequence[T], Sequence[T]]]:
             if remaining <= 0:
                 for one, two, back in _comparisons(node):
-                    keep_if_left_diverse(one, two, back)
+                    # A run is left-diverse when it starts a string, or follows different
+                    # elements.
+                    diverse = one.previous is None or one.previous != two.previous
+                    first, second = one.position - back, two.position - back
+                    if diverse and first > 0 and (heavy(one, first) or heavy(two, second)):
+                        yield one.run(first), two.run(second)
             for code, child in node.children.items():
-                find_from(child, remaining - weight(code))
+                yield from find_from(child, remaining - weight(code))
 
-        find_from(self._root, threshold)
-        return found
+        yield from find_from(self._root, threshold)

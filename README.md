@@ -123,11 +123,23 @@ measured. The tools see different things: the one copy jscpd finds in avenir-mcp
 inside a large dictionary literal whose surrounding statements differ, which a tool that
 compares whole statements does not report. Run them together.
 
-## Speed
+## Speed and memory
 
-On an Apple M4 with Python 3.14, the `json` package of the standard library takes 0.1 s,
-`email` 0.7 s, `asyncio` 1.0 s, and the whole standard library (455,000 lines, tests left
-out) 62 s, against 222 s before the clustering weighed only what it needed. `just bench`
+On an Apple M4 with Python 3.14: the `json` package of the standard library takes
+0.07 s, `email` 0.3 s, `asyncio` 0.4 s, and the whole standard library (455,000 lines,
+tests left out) 47 s and 1.1 GB of memory, against 222 s and 2.6 GB at first, with the
+same 9,579 clones. What was done, measured step by step:
+
+- clustering, marking and refinement weigh only what they need (the sizes and the
+  distance of an anti-unification, not its pattern), and stop as soon as the answer
+  cannot change;
+- marking starts from the cluster a statement was gathered into, which bounds the rest;
+- the suffix tree keeps where each suffix starts instead of a copy of it, and hands its
+  two million candidates over one at a time instead of in one list;
+- trees no longer keep their covered lines on every node, and share line sets and names.
+
+The rest of the time goes to the largest bucket of similar statements (4,668 in the
+standard library), compared cluster by cluster, and to the suffix tree. `just bench`
 measures it again.
 
 ## Development

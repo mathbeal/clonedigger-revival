@@ -146,3 +146,10 @@ def test_syntax_errors_name_the_file() -> None:
     with pytest.raises(SyntaxError) as error:
         read_source(HERE, "def (:\n")
     assert error.value.filename == str(HERE)
+
+
+def test_statements_keep_their_covered_lines() -> None:
+    """A statement computes its lines once and keeps them."""
+    (statement,) = read_source(HERE, "a = (\n    1\n)\n").sequences[0]
+    assert statement.covered_lines is statement.covered_lines
+    assert statement.covered_lines == {1, 2}

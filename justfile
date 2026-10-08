@@ -65,8 +65,8 @@ fuzz examples="50000":
     CLONEDIGGER_FUZZ_EXAMPLES={{examples}} uv run pytest -o addopts="" -p no:cacheprovider -q --hypothesis-profile=fuzz
 
 # Time the detection on packages of the standard library of growing size, and on the
-# whole of it (tests left out). Reference, Apple M4, Python 3.14: json 0.1 s, email
-# 0.7 s, asyncio 1.0 s, the whole library (455,000 lines) 62 s.
+# whole of it (tests left out). Reference, Apple M4, Python 3.14: json 0.07 s, email
+# 0.3 s, asyncio 0.4 s, the whole library (455,000 lines) 47 s and 1.1 GB.
 bench:
     #!/usr/bin/env bash
     set -euo pipefail

@@ -29,7 +29,7 @@ from clonedigger.suffix_tree import SuffixTree
 from clonedigger.tree import Node
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable, Iterable, Sequence
+    from collections.abc import Hashable, Iterable, Iterator, Sequence
 
     from clonedigger.python_frontend import SourceFile, Statement
 
@@ -184,18 +184,34 @@ def mark_statements(statements: Sequence[Statement], clusters: Sequence[Cluster]
         statements: The statements of one bucket.
         clusters: The clusters built from that bucket.
     """
+    # The cluster each statement was gathered into: likely the closest, so weighing it
+    # first gives a tight limit for all the others.
+    # Like the limits below, it only saves time: the closest cluster is the same without.
+    home = _homes(clusters)  # pragma: no mutate
     for statement in statements:
         # The cluster whose pattern the statement is closest to, the first on a tie.
         # Clone Digger 1.1.0 also added the statement to every cluster that improved on
         # the best so far, which inflated their sizes; only the chosen one receives it.
-        # A cluster stops being weighed once it is no closer than the best so far.
+        # A cluster stops being weighed once it cannot be closer than the best so far.
+        start = home.get(id(statement.tree))  # pragma: no mutate - time only
+        known = _known_distance(start, statement.tree)  # pragma: no mutate - time only
+        # Just above the known distance: a cluster as close but earlier still wins.
+        ceiling = math.nextafter(known, math.inf)
         best, lowest = clusters[0], math.inf
         for cluster in clusters:
-            distance = _distance_to(cluster, statement.tree, lowest)
+            distance = _distance_to(cluster, statement.tree, min(lowest, ceiling))
             if distance < lowest:
                 best, lowest = cluster, distance
         statement.mark = best
         best.add_without_unification(statement.tree)
+
+
+def _homes(clusters: Sequence[Cluster]) -> dict[int, Cluster]:
+    return {id(t): c for c in clusters for t in c.trees}  # pragma: no mutate - time only
+
+
+def _known_distance(home: Cluster | None, tree: Node) -> float:
+    return math.inf if home is None else _distance_to(home, tree, math.inf)  # pragma: no mutate
 
 
 def _distance_to(cluster: Cluster, tree: Node, limit: float) -> float:
@@ -233,7 +249,7 @@ def drop_long_equal_runs(sequences: Sequence[Sequence[Statement]]) -> list[list[
 
 def _candidates(
     sequences: Sequence[Sequence[Statement]], threshold: int
-) -> list[tuple[tuple[Statement, ...], tuple[Statement, ...]]]:
+) -> Iterator[tuple[tuple[Statement, ...], tuple[Statement, ...]]]:
     def mark_of(statement: Statement) -> Hashable:
         return statement.mark
 
@@ -245,12 +261,12 @@ def _candidates(
     tree: SuffixTree[Statement] = SuffixTree(mark_of)
     for sequence in sequences:
         tree.add(sequence)
-    pairs = tree.best_max_substrings(threshold, weight, lambda run: len(covered_lines(run)))
-    return [(tuple(first), tuple(second)) for first, second in pairs]
+    pairs = tree.iter_best_max_substrings(threshold, weight, lambda run: len(covered_lines(run)))
+    return ((tuple(first), tuple(second)) for first, second in pairs)
 
 
 def refine(
-    candidates: list[tuple[tuple[Statement, ...], tuple[Statement, ...]]], settings: Settings
+    candidates: Iterable[tuple[tuple[Statement, ...], tuple[Statement, ...]]], settings: Settings
 ) -> list[Clone]:
     """Shrink each candidate pair to its longest window that is close enough.
 
@@ -258,15 +274,26 @@ def refine(
     remains on each side of it is searched again.
 
     Args:
-        candidates: Pairs of statement runs with the same marks; consumed.
+        candidates: Pairs of statement runs with the same marks, read one at a time:
+            each is refined on its own, so millions of them need not be held at once.
         settings: The size and distance thresholds.
 
     Returns:
         The clones found.
     """
     clones: list[Clone] = []
-    while candidates:
-        first, second = candidates.pop()
+    for candidate in candidates:
+        clones.extend(_refine_one(candidate, settings))
+    return clones
+
+
+def _refine_one(
+    candidate: tuple[tuple[Statement, ...], tuple[Statement, ...]], settings: Settings
+) -> list[Clone]:
+    clones: list[Clone] = []
+    parts = [candidate]
+    while parts:
+        first, second = parts.pop()
         for length in range(len(first), 0, -1):
             found = _closest_window(first, second, length, settings)
             if found is None:
@@ -280,7 +307,7 @@ def refine(
             before = (first[:start], second[:start])
             after = (first[end:], second[end:])
             # Both sides of a part have the same length: testing one is enough.
-            candidates.extend(part for part in (before, after) if part[0])  # pragma: no mutate
+            parts.extend(part for part in (before, after) if part[0])  # pragma: no mutate
             break
     return clones
 
@@ -295,10 +322,17 @@ def _closest_window(
         one, other = first[start : start + length], second[start : start + length]
         if min(len(covered_lines(one)), len(covered_lines(other))) < settings.size_threshold:
             continue
-        distance = anti_unify(sequence_tree(one), sequence_tree(other)).distance
+        # Only the distance is needed, and only if it is under the threshold.
+        limit = settings.distance_threshold
+        distance = _sequence_distance(one, other, limit)  # pragma: no mutate - time only
         if distance < settings.distance_threshold:
             return start, Clone(one, other, distance)
     return None
+
+
+def _sequence_distance(one: Sequence[Statement], other: Sequence[Statement], limit: float) -> float:
+    pair = (sequence_tree(one), sequence_tree(other))
+    return sum(difference(*pair, limit))  # pragma: no mutate - the limit only saves time
 
 
 def without_dominated(clones: Sequence[Clone]) -> list[Clone]:

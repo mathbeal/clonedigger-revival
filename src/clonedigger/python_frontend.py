@@ -25,6 +25,7 @@ run.
 from __future__ import annotations
 
 import ast
+import sys
 import warnings
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Final
@@ -74,10 +75,14 @@ class Statement:
     ancestors: tuple[Statement, ...] = ()
     mark: Cluster | None = field(default=None, repr=False)
 
+    _covered: frozenset[int] | None = field(default=None, init=False, repr=False)
+
     @property
     def covered_lines(self) -> frozenset[int]:
-        """The source lines the statement spans."""
-        return self.tree.covered_lines
+        """The source lines the statement spans, computed once."""
+        if self._covered is None:
+            self._covered = self.tree.covered_lines
+        return self._covered
 
 
 @dataclass(frozen=True)
@@ -218,7 +223,9 @@ class _Reader:
         if isinstance(value, ast.AST):
             return self.tree(value, ancestors)
         # A name, an attribute name, an operator's text, a constant: a leaf holds its text.
-        return Node(repr(value))
+        # The same names come back thousands of times in a large code base: one shared
+        # string each.
+        return Node(sys.intern(repr(value)))
 
 
 def read_source(path: Path, text: str, skipped_prefixes: Sequence[str] = ()) -> SourceFile:

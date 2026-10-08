@@ -83,9 +83,15 @@ def largest_first(clones: Sequence[Clone]) -> list[Clone]:
         clones: The clones found.
 
     Returns:
-        The same clones; equal sizes keep the order they came in.
+        The same clones; equal sizes are ordered by the place of each copy.
     """
-    return sorted(clones, key=lambda clone: -len(covered_lines(clone.first)))
+    return sorted(clones, key=_order)
+
+
+def _order(clone: Clone) -> tuple[int, str, int, str, int]:
+    # Largest first; then by place, so that the same clones always print in one order.
+    first, second = Span.of(clone.first), Span.of(clone.second)
+    return (-len(covered_lines(clone.first)), first.path, first.start, second.path, second.start)
 
 
 def findings(clones: Sequence[Clone]) -> list[Finding]:

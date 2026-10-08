@@ -26,7 +26,7 @@ def test_matches_clone_digger_1_1_0(name: str) -> None:
     tree: SuffixTree[str] = SuffixTree(lambda element: element)
     for word in case["words"]:
         tree.add(list(word))
-    pairs = tree.best_max_substrings(case["threshold"], lambda _code: 1, len)
+    pairs = list(tree.iter_best_max_substrings(case["threshold"], lambda _code: 1, len))
     assert sorted(sorted(["".join(a), "".join(b)]) for a, b in pairs) == case["pairs"]
 
 
@@ -35,7 +35,7 @@ def test_codes_decide_what_matches() -> None:
     tree: SuffixTree[str] = SuffixTree(str.lower)
     tree.add(list("xABCy"))
     tree.add(list("zabcw"))
-    pairs = tree.best_max_substrings(3, lambda _code: 1, len)
+    pairs = list(tree.iter_best_max_substrings(3, lambda _code: 1, len))
     assert sorted(sorted(["".join(a), "".join(b)]) for a, b in pairs) == [["ABC", "abc"]]
 
 
@@ -44,7 +44,7 @@ def test_light_candidates_are_dropped() -> None:
     tree: SuffixTree[str] = SuffixTree(lambda element: element)
     tree.add(list("xaby"))
     tree.add(list("zabw"))
-    assert not tree.best_max_substrings(3, lambda _code: 2, len)
+    assert not list(tree.iter_best_max_substrings(3, lambda _code: 2, len))
 
 
 def _run_pairs(tree: SuffixTree[str], *args: object) -> list[list[str]]:
@@ -53,7 +53,7 @@ def _run_pairs(tree: SuffixTree[str], *args: object) -> list[list[str]]:
     Returns:
         Each pair as two strings, the pairs sorted.
     """
-    pairs = tree.best_max_substrings(*args)  # type: ignore[arg-type]
+    pairs = list(tree.iter_best_max_substrings(*args))  # type: ignore[arg-type]
     return sorted(sorted(["".join(a), "".join(b)]) for a, b in pairs)
 
 

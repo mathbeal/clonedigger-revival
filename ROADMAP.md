@@ -12,7 +12,8 @@ Each step ends with `just check` green and every mutant killed.
    by a failing test and 2 by a time-out (they make refinement loop forever).
    997 mutants today, all caught.
 5. **Measure.** Done for speed: the whole standard library of Python 3.14 (455,000
-   lines, tests left out) takes 62 s instead of 222 s, with the same 9,579 clones
+   lines, tests left out) takes 47 s and 1.1 GB instead of 222 s and 2.6 GB, with the same
+   9,579 clones
    (`just bench`), and compared with pylint `duplicate-code` and jscpd (README).
    To come: measure precision over every pair on a labelled sample.
 6. **Done: continuous integration** (every gate, Python 3.12 to 3.14 on Linux, macOS and

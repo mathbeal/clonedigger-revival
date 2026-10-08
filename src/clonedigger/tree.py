@@ -26,10 +26,15 @@ if TYPE_CHECKING:
 VARIABLE_COST: Final = 0.5
 
 
+# A node stands on one line, most of the time: one shared set per line number instead
+# of one set per node.
+_SINGLE_LINES: dict[int, frozenset[int]] = {}
+
+
 class Node:
     """A node of a syntax tree: a label, its children, and the source lines it spans."""
 
-    __slots__ = ("_covered", "_hash", "_size", "children", "label", "lines")
+    __slots__ = ("_hash", "_size", "children", "label", "lines")
 
     label: str
     children: tuple[Node, ...]
@@ -47,10 +52,13 @@ class Node:
         """
         self.label = label
         self.children = tuple(children)
-        self.lines = frozenset(lines)
+        found = frozenset(lines)
+        if len(found) == 1:
+            (line,) = found
+            found = _SINGLE_LINES.setdefault(line, found)
+        self.lines = found
         self._hash = hash((self.label, self.children))
         self._size: float | None = None
-        self._covered: frozenset[int] | None = None
 
     @override
     def __eq__(self, other: object) -> bool:
@@ -109,10 +117,18 @@ class Node:
 
     @property
     def covered_lines(self) -> frozenset[int]:
-        """The source lines spanned by the node and all its descendants."""
-        if self._covered is None:
-            self._covered = self.lines.union(*(child.covered_lines for child in self.children))
-        return self._covered
+        """The source lines spanned by the node and all its descendants.
+
+        Computed on each call: a statement keeps its own (see `Statement`). Kept on
+        every node, these sets made most of the memory of a large run.
+        """
+        lines: set[int] = set()
+        stack: list[Node] = [self]
+        while stack:
+            node = stack.pop()
+            lines.update(node.lines)
+            stack.extend(node.children)
+        return frozenset(lines)
 
 
 class Variable(Node):

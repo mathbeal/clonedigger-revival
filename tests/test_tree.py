@@ -5,7 +5,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from clonedigger import VARIABLE_COST, Node, Variable
+
+if TYPE_CHECKING:
+    import pytest
 
 
 def test_equality_ignores_lines() -> None:
@@ -56,11 +61,20 @@ def test_repr_reads_like_the_tree() -> None:
     assert repr(Node("Add", (Node("a"), Node("1")))) == "Add(a, 1)"
 
 
-def test_measures_are_computed_once() -> None:
-    """Asking twice gives the same answer from the stored value."""
+def test_size_is_computed_once_and_lines_on_demand() -> None:
+    """The size is kept; covered lines are recomputed, equal each time."""
     node = Node("Add", (Node("a", lines={1}), Node("b", lines={2})))
-    assert node.covered_lines is node.covered_lines
     assert node.size == node.size == 2
+    assert node.covered_lines == node.covered_lines == {1, 2}
+
+
+def test_single_line_sets_are_shared(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Two nodes on the same single line share one set of lines, the right one."""
+    monkeypatch.setattr("clonedigger.tree._SINGLE_LINES", {})
+    first = Node("a", lines={7})
+    assert first.lines == {7}
+    assert Node("b", lines=[7]).lines is first.lines
+    assert Node("c", lines={7, 8}).lines == {7, 8}
 
 
 def test_different_trees_hash_apart() -> None:
