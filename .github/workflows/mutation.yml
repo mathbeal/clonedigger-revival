@@ -11,6 +11,11 @@ on:
 
 permissions: {}
 
+# One run at a time: a manual run waits for the scheduled one.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 env:
   UV_FROZEN: "1"
 

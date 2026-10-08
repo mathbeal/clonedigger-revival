@@ -26,7 +26,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
-      security-events: write
+      security-events: write # to upload what it finds as code scanning alerts
     strategy:
       fail-fast: false
       matrix:
