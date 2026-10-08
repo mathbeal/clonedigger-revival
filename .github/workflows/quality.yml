@@ -66,12 +66,25 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python: ["3.12", "3.13", "3.14"]
+        experimental: [false]
+        include:
+          # 3.15 is not final yet. Its new syntax is what the tool must read next: a
+          # failure is a warning on the run, not a red check.
+          - os: ubuntu-latest
+            python: "3.15"
+            experimental: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
-      - run: uv run --python ${{ matrix.python }} pytest
+      - id: pytest
+        run: uv run --python ${{ matrix.python }} pytest
+        continue-on-error: ${{ matrix.experimental }}
+      - if: steps.pytest.outcome == 'failure'
+        env:
+          PYTHON: ${{ matrix.python }}
+        run: echo "::warning::The tests fail on Python $PYTHON, which is not final yet."
 
   hygiene:
     name: typos, licences (REUSE), workflow audit
@@ -110,11 +123,45 @@ jobs:
           (cd first && sha256sum -- *) > first.sha256
           (cd second && sha256sum --check --strict ../first.sha256)
 
+  audit:
+    name: known vulnerabilities
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      # The tool depends on nothing; the tools that check and build it run here, on
+      # every pull request, and are audited for that.
+      - run: uv export --frozen --no-emit-project --all-groups -o requirements.txt
+      - run: uvx pip-audit --strict --disable-pip -r requirements.txt
+
+  secrets:
+    name: no secret in the history
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Every commit, not only the last one: a secret removed later is still published.
+          fetch-depth: 0
+      # gitleaks 8.30.1, pinned by digest. --redact keeps a found secret out of the log.
+      - run: >-
+          docker run --rm -v "$PWD:/repo"
+          zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+          git /repo --redact --log-opts=--all
+
   passed:
     name: CI passed
     # The one check a branch rule needs: it stands for every job above.
     if: always()
-    needs: [lint, types, tests, hygiene, build]
+    needs: [lint, types, tests, hygiene, build, audit, secrets]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}
