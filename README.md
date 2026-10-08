@@ -106,6 +106,23 @@ It differs on purpose, each time with a test:
 The front ends for Java, JavaScript and Lua and the Eclipse plugin of 1.1.0 are not
 ported. The original release is kept unmodified under `legacy/`.
 
+## Compared with line and token tools
+
+Measured on 2026-10-08, with default settings and copies of at least 5 lines for
+jscpd 4.0.5 (`--format python --min-lines 5`) and pylint's `duplicate-code` (4 lines):
+
+| Code | Clone Digger | pylint `duplicate-code` | jscpd |
+|---|---|---|---|
+| `asyncio` of Python 3.14 (15,000 lines) | 174 clones | 31 | 3 |
+| avenir-mcp 0.5 (10,500 lines) | 27 | 0 | 1 |
+
+The counts are pairs: three copies of one block make three. Sampled by hand, Clone
+Digger's are real copies with renamed names, such as `sock_recv_into` and
+`sock_recvfrom` in `asyncio/selector_events.py`; precision over every pair has not been
+measured. The tools see different things: the one copy jscpd finds in avenir-mcp lies
+inside a large dictionary literal whose surrounding statements differ, which a tool that
+compares whole statements does not report. Run them together.
+
 ## Speed
 
 On an Apple M4 with Python 3.14, the `json` package of the standard library takes 0.1 s,

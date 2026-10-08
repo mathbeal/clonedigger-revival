@@ -13,8 +13,8 @@ Each step ends with `just check` green and every mutant killed.
    997 mutants today, all caught.
 5. **Measure.** Done for speed: the whole standard library of Python 3.14 (455,000
    lines, tests left out) takes 62 s instead of 222 s, with the same 9,579 clones
-   (`just bench`). To come: compare with pylint `duplicate-code` and jscpd on real
-   projects, and show the clones only anti-unification finds.
+   (`just bench`), and compared with pylint `duplicate-code` and jscpd (README).
+   To come: measure precision over every pair on a labelled sample.
 6. **Done: continuous integration** (every gate, Python 3.12 to 3.14 on Linux, macOS and
    Windows, mutation weekly), REUSE licensing, the README.
 7. **Publish**, with the original author's agreement on the name: attested releases
