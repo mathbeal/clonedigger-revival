@@ -5,13 +5,19 @@
 
 from __future__ import annotations
 
+import hashlib
+import os
 import re
+import subprocess  # ruff: ignore[suspicious-subprocess-import] - see the hash test
+import sys
 from pathlib import Path
 from textwrap import dedent
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
-from clonedigger.anti_unification import Cluster
+from clonedigger.anti_unification import Cluster, difference
 from clonedigger.detection import (
     MAX_EQUAL_MARKS,
     SEQUENCE_LABEL,
@@ -23,6 +29,7 @@ from clonedigger.detection import (
     dcup_hash,
     drop_long_equal_runs,
     find_clones,
+    label_hash,
     mark_statements,
     refine,
     sequence_tree,
@@ -223,10 +230,31 @@ def test_rough_hash_follows_the_formula_of_the_original() -> None:
     """Root label times depth times arity, plus children weighted by their position."""
     name, const = Node("Name", (Node("'x'"),)), Node("Constant", (Node("1"),))
     tree = Node("Assign", (name, const))
-    level_0 = [hash(1 * hash("Name") * 1), hash(1 * hash("Constant") * 1)]
-    expected = hash(2 * hash("Assign") * 2 + 1 * level_0[0] + 2 * level_0[1])
+    level_0 = [hash(1 * label_hash("Name") * 1), hash(1 * label_hash("Constant") * 1)]
+    expected = hash(2 * label_hash("Assign") * 2 + 1 * level_0[0] + 2 * level_0[1])
     assert dcup_hash(tree, 1) == expected
-    assert dcup_hash(tree, 0) == hash(1 * hash("Assign") * 2)
+    assert dcup_hash(tree, 0) == hash(1 * label_hash("Assign") * 2)
+
+
+def test_a_label_hashes_the_same_in_every_run() -> None:
+    """The hash of a label is its BLAKE2b digest, whatever the seed of `hash`."""
+    label_hash.cache_clear()
+    assert label_hash("Assign") == int.from_bytes(
+        hashlib.blake2b(b"Assign", digest_size=8).digest()
+    )
+    # This very Python, on a script written here: nothing untrusted is run.
+    script = "from clonedigger.detection import label_hash; print(label_hash('Assign'))"
+    runs = {
+        subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+            [sys.executable, "-c", script],
+            env={**os.environ, "PYTHONHASHSEED": seed},
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+        for seed in ("1", "2")
+    }
+    assert runs == {f"{label_hash('Assign')}\n"}
 
 
 def test_a_run_of_statements_is_joined_under_the_original_label() -> None:
@@ -355,3 +383,83 @@ def test_joining_ties_go_to_the_first_cluster() -> None:
     # once from each: a tie at 1, which goes to the first cluster.
     clusters = build_clusters([first, second, call("p1", "r2", "q")], 1)
     assert [len(cluster) for cluster in clusters] == [2, 1]
+
+
+def exhaustive_refine(first: tuple[Statement, ...], second: tuple[Statement, ...]) -> list[Clone]:
+    """Refine a candidate as Clone Digger 1.1.0 did: every length, every start.
+
+    Returns:
+        The clones, in the order the stack of parts gives them.
+    """
+    settings = Settings()
+    clones: list[Clone] = []
+    parts = [(first, second)]
+    while parts:
+        one, other = parts.pop()
+        for length in range(len(one), 0, -1):
+            window = next(
+                (
+                    (start, distance)
+                    for start in range(len(one) - length + 1)
+                    if min(
+                        len(covered_lines(one[start : start + length])),
+                        len(covered_lines(other[start : start + length])),
+                    )
+                    >= settings.size_threshold
+                    and (
+                        distance := sum(
+                            difference(
+                                sequence_tree(one[start : start + length]),
+                                sequence_tree(other[start : start + length]),
+                            )
+                        )
+                    )
+                    < settings.distance_threshold
+                ),
+                None,
+            )
+            if window is not None:
+                start, distance = window
+                end = start + length
+                clones.append(Clone(one[start:end], other[start:end], distance))
+                parts.extend(
+                    part
+                    for part in ((one[:start], other[:start]), (one[end:], other[end:]))
+                    if part[0]
+                )
+                break
+    return clones
+
+
+# A statement: how many lines it spans, and the names it uses on each side.
+STATEMENTS = st.lists(
+    st.tuples(
+        st.integers(1, 3),
+        st.lists(st.sampled_from("abc"), min_size=1, max_size=3),
+        st.lists(st.sampled_from("abe"), min_size=1, max_size=3),
+    ),
+    min_size=1,
+    max_size=14,
+)
+
+
+@given(STATEMENTS)
+def test_refining_finds_the_windows_an_exhaustive_search_finds(
+    statements: list[tuple[int, list[str], list[str]]],
+) -> None:
+    """The windows found are those of trying every length and every start, as 1.1.0 did.
+
+    Names repeat within and across statements, so that pairs of differing names are
+    shared, as anti-unification shares them; statements of several lines make some
+    windows too small.
+    """
+    sides: tuple[list[Statement], list[Statement]] = ([], [])
+    line = 1
+    for span, *names in statements:
+        lines = set(range(line, line + span))
+        for side, (path, used) in zip(sides, zip("ab", names, strict=True), strict=True):
+            tree = Node("Call", tuple(Node(name) for name in used), lines=lines)
+            side.append(Statement(tree, Path(f"{path}.py")))
+        line += span
+    first, second = tuple(sides[0]), tuple(sides[1])
+    assert refine([(first, second)], Settings()) == exhaustive_refine(first, second)

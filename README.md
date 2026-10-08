@@ -135,8 +135,8 @@ compares whole statements does not report. Run them together.
 ## Speed and memory
 
 On an Apple M4 with Python 3.14: the `json` package of the standard library takes
-0.07 s, `email` 0.3 s, `asyncio` 0.4 s, and the whole standard library (455,000 lines,
-tests left out) 47 s and 1.1 GB of memory, against 222 s and 2.6 GB at first, with the
+0.09 s, `email` 0.3 s, `asyncio` 0.5 s, and the whole standard library (455,000 lines,
+tests left out) 50 s and 1.1 GB of memory, against 222 s and 2.6 GB at first, with the
 same 9,579 clones. What was done, measured step by step:
 
 - clustering, marking and refinement weigh only what they need (the sizes and the
@@ -145,7 +145,12 @@ same 9,579 clones. What was done, measured step by step:
 - marking starts from the cluster a statement was gathered into, which bounds the rest;
 - the suffix tree keeps where each suffix starts instead of a copy of it, and hands its
   two million candidates over one at a time instead of in one list;
-- trees no longer keep their covered lines on every node, and share line sets and names.
+- trees no longer keep their covered lines on every node, and share line sets and names;
+- a candidate is shrunk to its clone without trying every length at every start, which
+  took a time growing with the cube of its length: with `--force`, two files of 800
+  similar assignments took more than four minutes, and take about 20 s. The clones are the
+  same, and a test checks it against the search of 1.1.0; ordinary code takes a little
+  longer (50 s on the standard library, against 47 s), the price of that bound.
 
 The rest of the time goes to the largest bucket of similar statements (4,668 in the
 standard library), compared cluster by cluster, and to the suffix tree. `just bench`

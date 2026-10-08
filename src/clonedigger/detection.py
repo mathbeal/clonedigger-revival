@@ -1,5 +1,6 @@
 # Copyright 2008 Peter Bulychev (Clone Digger 1.1.0, clone_detection_algorithm.py)
-# Copyright 2026 Mathieu Béal (modified 2026-10-07: ported to Python 3, split in steps)
+# Copyright 2026 Mathieu Béal (modified 2026-10-07: ported to Python 3, split in steps;
+# 2026-10-08: windows searched in square time, labels hashed the same in every run)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Find the clones in a set of files: the pipeline of Clone Digger, step by step.
@@ -19,8 +20,10 @@ The thresholds keep their meaning and their default values. They are passed as
 
 from __future__ import annotations
 
+import hashlib
 import math
 from dataclasses import dataclass
+from functools import cache
 from itertools import groupby
 from typing import TYPE_CHECKING, cast
 
@@ -89,6 +92,24 @@ def covered_lines(sequence: Iterable[Statement]) -> frozenset[int]:
     return frozenset().union(*(statement.covered_lines for statement in sequence))
 
 
+@cache
+def label_hash(label: str) -> int:
+    """Hash a label the same way in every run.
+
+    `hash` of a string changes with every run of Python, unless PYTHONHASHSEED is
+    set: two runs would then disagree on which shapes collide, and could put
+    statements in other buckets. Python 2, which Clone Digger 1.1.0 ran on, did not
+    vary it.
+
+    Args:
+        label: The label of a node.
+
+    Returns:
+        The first 8 bytes of its BLAKE2b digest, as an integer.
+    """
+    return int.from_bytes(hashlib.blake2b(label.encode(), digest_size=8).digest())
+
+
 def dcup_hash(node: Node, level: int) -> int:
     """Hash the top of a tree only, so that trees of the same rough shape collide.
 
@@ -104,7 +125,7 @@ def dcup_hash(node: Node, level: int) -> int:
     """
     if node.is_leaf:
         return 0
-    total = (level + 1) * hash(node.label) * len(node.children)
+    total = (level + 1) * label_hash(node.label) * len(node.children)
     if level != 0:
         total += sum(
             position * dcup_hash(child, level - 1)
@@ -294,40 +315,87 @@ def _refine_one(
     parts = [candidate]
     while parts:
         first, second = parts.pop()
-        for length in range(len(first), 0, -1):
-            found = _closest_window(first, second, length, settings)
-            if found is None:
-                continue
-            start, clone = found
-            clones.append(clone)
-            # What lies on each side of the window is searched again. Clone Digger 1.1.0
-            # searched first[:start - 1] before it, which left out the statement just
-            # before the window.
-            end = start + length
-            before = (first[:start], second[:start])
-            after = (first[end:], second[end:])
-            # Both sides of a part have the same length: testing one is enough.
-            parts.extend(part for part in (before, after) if part[0])  # pragma: no mutate
-            break
+        found = _longest_window(first, second, settings)
+        if found is None:
+            continue
+        start, end, clone = found
+        clones.append(clone)
+        # What lies on each side of the window is searched again. Clone Digger 1.1.0
+        # searched first[:start - 1] before it, which left out the statement just
+        # before the window.
+        before = (first[:start], second[:start])
+        after = (first[end:], second[end:])
+        # Both sides of a part have the same length: testing one is enough.
+        parts.extend(part for part in (before, after) if part[0])  # pragma: no mutate
     return clones
 
 
-def _closest_window(
-    first: tuple[Statement, ...], second: tuple[Statement, ...], length: int, settings: Settings
-) -> tuple[int, Clone] | None:
-    # The starts of every window of `length` statements. A mutated bound would add
-    # shorter windows at the end, which a later, shorter length tries anyway.
-    starts = range(len(first) - length + 1)  # pragma: no mutate
-    for start in starts:
-        one, other = first[start : start + length], second[start : start + length]
-        if min(len(covered_lines(one)), len(covered_lines(other))) < settings.size_threshold:
+def _longest_window(
+    first: tuple[Statement, ...], second: tuple[Statement, ...], settings: Settings
+) -> tuple[int, int, Clone] | None:
+    """Find the longest window close enough and large enough, the leftmost on a tie.
+
+    Clone Digger 1.1.0 tried every length from the longest down, and every start from
+    the left: a cube of the length of the candidate, which a run of a few hundred
+    similar statements made endless. Two facts give the same window far sooner:
+
+    - widening a window only adds pairs of differing subtrees, each of positive
+      weight, so its distance never shrinks: if the window one statement longer than
+      the best so far is not close enough, no longer window from that start is;
+    - widening a window only adds lines: if the widest close window from a start is
+      too small, every window from that start is.
+
+    Each start is thus weighed once, against the best so far, and only a start that
+    beats it is widened, one statement at a time: most windows are short, and
+    longer leaps cost more than they save (measured on the standard library and on
+    runs of 800 statements).
+
+    Args:
+        first: One side of the candidate.
+        second: The other, as long.
+        settings: The size and distance thresholds.
+
+    Returns:
+        The start and the end of the window, and the clone it makes; None when no
+        window is both close enough and large enough.
+    """
+    best: tuple[int, int] | None = None
+    longest = 0
+    # Most often the whole candidate is the clone: one weighing then settles it.
+    if _large(first, second, settings) and _close(first, second, settings):
+        best, longest = (0, len(first)), len(first)
+    for start in range(len(first)):
+        end = start + longest + 1
+        # Past this start, even the rest of the candidate is too short or too small.
+        if end > len(first) or not _large(first[start:], second[start:], settings):
+            break
+        # The rest is large enough, so some end is: the first one is the cheapest to weigh.
+        while not _large(first[start:end], second[start:end], settings):
+            end += 1
+        if not _close(first[start:end], second[start:end], settings):
             continue
-        # Only the distance is needed, and only if it is under the threshold.
-        limit = settings.distance_threshold
-        distance = _sequence_distance(one, other, limit)  # pragma: no mutate - time only
-        if distance < settings.distance_threshold:
-            return start, Clone(one, other, distance)
-    return None
+        # One past the end slices to the same window, and leaves nothing after it.
+        while end < len(first):  # pragma: no mutate
+            if not _close(first[start : end + 1], second[start : end + 1], settings):
+                break
+            end += 1
+        best, longest = (start, end), end - start
+    if best is None:
+        return None
+    start, end = best
+    one, other = first[start:end], second[start:end]
+    distance = _sequence_distance(one, other, settings.distance_threshold)  # pragma: no mutate
+    return start, end, Clone(one, other, distance)
+
+
+def _large(one: Sequence[Statement], other: Sequence[Statement], settings: Settings) -> bool:
+    return min(len(covered_lines(one)), len(covered_lines(other))) >= settings.size_threshold
+
+
+def _close(one: Sequence[Statement], other: Sequence[Statement], settings: Settings) -> bool:
+    # Only whether the distance is under the threshold matters: the weighing stops there.
+    limit = settings.distance_threshold
+    return _sequence_distance(one, other, limit) < limit
 
 
 def _sequence_distance(one: Sequence[Statement], other: Sequence[Statement], limit: float) -> float:
