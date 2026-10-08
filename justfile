@@ -56,6 +56,10 @@ hygiene:
     uvx --from 'reuse[charset-normalizer]==6.2.0' reuse lint
 
 # Mutation testing: slow; run before a release, and read what survives.
+# Check that every link of the Markdown files leads somewhere (needs Docker).
+links:
+    docker run --rm -v "$PWD:/input" -w /input lycheeverse/lychee@sha256:eaff3e0a13603c9a701accfcc84f44158bb77bf36ecfa4622b626056c3463892 --config lychee.toml --no-progress README.md CONTRIBUTING.md SECURITY.md ROADMAP.md NOTICE.md CODE_OF_CONDUCT.md
+
 mutate:
     uv run mutmut run
     uv run mutmut results

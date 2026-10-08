@@ -1,0 +1,21 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Links checked by `just links` and the links workflow: every link of the Markdown files
+# at the root of the repository.
+scheme = ["https", "http"]
+max_retries = 3
+retry_wait_time = 5
+timeout = 30
+max_concurrency = 8
+cache = true
+max_cache_age = "1d"
+# A site that refuses robots (403) or asks to slow down (429) is up.
+accept = ["200..=299", "403", "429"]
+
+exclude = [
+  # This repository is private for now: its pages answer 404 to a robot.
+  '^https://github\.com/mathbeal/clonedigger-revival',
+  # The CI badge and the coverage badges are images of a private repository.
+  '^https://img\.shields\.io/',
+]
