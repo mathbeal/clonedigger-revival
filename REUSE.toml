@@ -43,6 +43,7 @@ path = [
     "tests/data/**",
     "**/*.md",
     "CITATION.cff",
+    "renovate.json",
     "uv.lock",
     "src/clonedigger/py.typed",
     ".gitignore",

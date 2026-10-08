@@ -1,0 +1,63 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# The original release and the files the tests read stay byte for byte as they are.
+exclude: ^(legacy/|tests/golden/|tests/data/)
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  # Every tool runs as CI and the justfile run it: ruff from the lockfile, typos,
+  # zizmor, pydoclint, lexdrift and reuse through uvx. Two versions of a tool give two
+  # verdicts.
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check (lint, imports, bandit)
+        entry: uv run ruff check --fix --force-exclude
+        language: system
+        types: [python]
+        require_serial: true
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --force-exclude
+        language: system
+        types: [python]
+        require_serial: true
+      - id: lexdrift
+        name: lexdrift
+        entry: uvx lexdrift check src
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: typos
+        name: typos
+        entry: uvx typos .
+        language: system
+        pass_filenames: false
+      - id: pydoclint
+        name: pydoclint (docstrings match signatures)
+        entry: uvx pydoclint==0.10.1 src
+        language: system
+        files: ^src/.*\.py$
+        pass_filenames: false
+      - id: reuse
+        name: reuse lint (copyright and licence of every file)
+        entry: uvx --from reuse[charset-normalizer]==6.2.0 reuse lint
+        language: system
+        pass_filenames: false
+      - id: zizmor
+        name: zizmor
+        entry: uvx zizmor --persona=regular .github/workflows/
+        language: system
+        files: ^\.github/workflows/
+        pass_filenames: false

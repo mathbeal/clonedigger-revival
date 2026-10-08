@@ -19,7 +19,10 @@ written down in the commit and in the code, with its reason.
 It runs, in order: formatting and lint (ruff with every rule, pylint, pydoclint for
 complete Google docstrings, deptry), `mypy --strict`, the tests at 100 % of lines and
 branches, vulture for code that nothing calls, lexdrift for one word per idea, and the
-lockfile check. `just hygiene` looks for typos.
+lockfile check. `just hygiene` looks for typos and checks the licence of every file.
+
+`uvx pre-commit install` runs the quick ones (ruff, typos, pydoclint, lexdrift, REUSE,
+zizmor) before each commit, with the same versions as CI.
 
 Before a release, `just mutate` changes the code one small way at a time and checks
 that a test fails each time. A survivor is a behaviour no test pins down, or a change

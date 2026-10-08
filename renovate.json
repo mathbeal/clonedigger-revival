@@ -1,0 +1,83 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Keep the tools that check and build Clone Digger current. It depends on nothing at run time. Minor and patch updates merge themselves once CI passes; the build backend, major versions and the weekly lock file refresh are reviewed by hand.",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "dependencyDashboard": false,
+  "semanticCommitType": "build",
+  "semanticCommitScope": "deps",
+  "commitBody": "Signed-off-by: {{{gitAuthor}}}",
+  "timezone": "Europe/Paris",
+  "schedule": [
+    "before 6am on monday"
+  ],
+  "prConcurrentLimit": 3,
+  "labels": [
+    "dependencies"
+  ],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": [
+      "dependencies",
+      "security"
+    ],
+    "minimumReleaseAge": null,
+    "schedule": [
+      "at any time"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Development tools, CI actions and hooks move together: one pull request, merged once CI passes.",
+      "matchManagers": [
+        "pep621",
+        "github-actions",
+        "pre-commit"
+      ],
+      "matchDepTypes": [
+        "dependency-groups",
+        "action",
+        "repository"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "groupName": "development tooling",
+      "automerge": true
+    },
+    {
+      "description": "The build backend decides the bytes of the wheel and the sdist: reviewed on its own, so that a release can still be rebuilt bit for bit.",
+      "matchPackageNames": [
+        "hatchling"
+      ],
+      "groupName": null,
+      "automerge": false
+    },
+    {
+      "description": "Major versions change what the build accepts or how a check judges: reviewed one at a time.",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": null,
+      "automerge": false
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "minimumReleaseAge": null,
+    "schedule": [
+      "before 6am on monday"
+    ],
+    "automerge": false
+  },
+  "pre-commit": {
+    "enabled": true
+  }
+}
