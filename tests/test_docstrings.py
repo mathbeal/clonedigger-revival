@@ -17,9 +17,11 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).parent.parent
-SOURCES = sorted((ROOT / "src" / "clonedigger").glob("*.py")) + sorted(
-    (ROOT / "tests").glob("*.py")
-)
+SOURCES = [
+    path
+    for directory in ("src/clonedigger", "tests", "benchmarks")
+    for path in sorted((ROOT / directory).glob("*.py"))
+]
 DEFINITIONS = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
 
 

@@ -42,9 +42,9 @@ repos:
         pass_filenames: false
       - id: pydoclint
         name: pydoclint (docstrings match signatures)
-        entry: uvx pydoclint==0.10.1 src
+        entry: uvx pydoclint==0.10.1 src benchmarks
         language: system
-        files: ^src/.*\.py$
+        files: ^(src|benchmarks)/.*\.py$
         pass_filenames: false
       # A test says what it checks in one line; a helper documents its arguments.
       - id: pydoclint-tests

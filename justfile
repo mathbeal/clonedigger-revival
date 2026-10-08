@@ -19,10 +19,10 @@ check: lint types test deadcode vocabulary lock
 # Format, lint (ruff, pylint), Google docstrings complete (pydoclint), dependencies
 # declared and used (deptry).
 lint:
-    uv run ruff format --check src tests vulture_whitelist.py
-    uv run ruff check src tests vulture_whitelist.py
-    uv run pylint src tests
-    uvx pydoclint==0.10.1 src
+    uv run ruff format --check src tests benchmarks vulture_whitelist.py
+    uv run ruff check src tests benchmarks vulture_whitelist.py
+    uv run pylint src tests benchmarks
+    uvx pydoclint==0.10.1 src benchmarks
     uvx pydoclint==0.10.1 --skip-checking-short-docstrings=True --exclude 'golden|samples' tests
     uv run deptry src
 
@@ -71,6 +71,11 @@ ruff-hook *files:
     uv run ruff check --fix --force-exclude {{files}}
     uv run ruff format --force-exclude {{files}}
 
+# Compare Clone Digger, pylint duplicate-code and jscpd on pinned releases of well-known
+# projects: time, memory and clones (needs Node.js). Names restrict it to those projects.
+compare *projects:
+    uv run python benchmarks/compare.py {{projects}}
+
 mutate:
     uv run mutmut run
     uv run mutmut results
@@ -118,8 +123,8 @@ reproducible:
 
 # Reformat.
 fix:
-    uv run ruff check --fix src tests vulture_whitelist.py
-    uv run ruff format src tests vulture_whitelist.py
+    uv run ruff check --fix src tests benchmarks vulture_whitelist.py
+    uv run ruff format src tests benchmarks vulture_whitelist.py
 
 # Record again what the original 1.1.0 answers (needs Docker).
 golden:

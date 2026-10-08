@@ -1,0 +1,235 @@
+{
+  "versions": {
+    "clonedigger": "0.0.1.dev0",
+    "pylint": "4.0.9",
+    "jscpd": "4.0.5",
+    "python": "3.14.7",
+    "machine": "Darwin arm64"
+  },
+  "projects": [
+    {
+      "name": "requests",
+      "version": "2.34.2",
+      "location": "ac/c3/e2a2b89f2d3e2179abd6d00ebd70bff6273f37fb3e0cc209f48b39d00cbf",
+      "archive": "requests-2.34.2.tar.gz",
+      "sha256": "f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed",
+      "package": "src/requests",
+      "lines": 6385,
+      "runs": [
+        {
+          "tool": "clonedigger",
+          "seconds": 0.1623952920199372,
+          "megabytes": 46.071808,
+          "pairs": 17,
+          "copied": 237
+        },
+        {
+          "tool": "pylint",
+          "seconds": 0.703911209013313,
+          "megabytes": 98.107392,
+          "pairs": 0,
+          "copied": 0
+        },
+        {
+          "tool": "jscpd",
+          "seconds": 0.27535416604951024,
+          "megabytes": 122.30656,
+          "pairs": 3,
+          "copied": 85
+        }
+      ]
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "location": "b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956",
+      "archive": "httpx-0.28.1.tar.gz",
+      "sha256": "75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc",
+      "package": "httpx",
+      "lines": 8828,
+      "runs": [
+        {
+          "tool": "clonedigger",
+          "seconds": 0.21977733296807855,
+          "megabytes": 51.560448,
+          "pairs": 82,
+          "copied": 1747
+        },
+        {
+          "tool": "pylint",
+          "seconds": 1.129877083003521,
+          "megabytes": 115.785728,
+          "pairs": 18,
+          "copied": 166
+        },
+        {
+          "tool": "jscpd",
+          "seconds": 0.3268862499971874,
+          "megabytes": 128.073728,
+          "pairs": 11,
+          "copied": 333
+        }
+      ]
+    },
+    {
+      "name": "Flask",
+      "version": "3.1.3",
+      "location": "26/00/35d85dcce6c57fdc871f3867d465d780f302a175ea360f62533f12b27e2b",
+      "archive": "flask-3.1.3.tar.gz",
+      "sha256": "0ef0e52b8a9cd932855379197dd8f94047b359ca0a78695144304cb45f87c9eb",
+      "package": "src/flask",
+      "lines": 9199,
+      "runs": [
+        {
+          "tool": "clonedigger",
+          "seconds": 0.16626487497705966,
+          "megabytes": 46.350336,
+          "pairs": 49,
+          "copied": 898
+        },
+        {
+          "tool": "pylint",
+          "seconds": 1.3545437920256518,
+          "megabytes": 129.581056,
+          "pairs": 1,
+          "copied": 137
+        },
+        {
+          "tool": "jscpd",
+          "seconds": 0.3203359160106629,
+          "megabytes": 126.976,
+          "pairs": 2,
+          "copied": 40
+        }
+      ]
+    },
+    {
+      "name": "click",
+      "version": "8.5.0",
+      "location": "c7/0e/7fa0ef50764b67090eca4114772a2abf8b6148198475e54c660b97caeee6",
+      "archive": "click-8.5.0.tar.gz",
+      "sha256": "ba0d2089de75ea0310e2dde03160e6ca10009947fb95a182f9b54021bb272e34",
+      "package": "src/click",
+      "lines": 12674,
+      "runs": [
+        {
+          "tool": "clonedigger",
+          "seconds": 0.3272661669761874,
+          "megabytes": 63.176704,
+          "pairs": 90,
+          "copied": 837
+        },
+        {
+          "tool": "pylint",
+          "seconds": 1.8209547080332413,
+          "megabytes": 143.44192,
+          "pairs": 1,
+          "copied": 40
+        },
+        {
+          "tool": "jscpd",
+          "seconds": 0.3865258749574423,
+          "megabytes": 170.377216,
+          "pairs": 1,
+          "copied": 22
+        }
+      ]
+    },
+    {
+      "name": "rich",
+      "version": "15.0.0",
+      "location": "c0/8f/0722ca900cc807c13a6a0c696dacf35430f72e0ec571c4275d2371fca3e9",
+      "archive": "rich-15.0.0.tar.gz",
+      "sha256": "edd07a4824c6b40189fb7ac9bc4c52536e9780fbbfbddf6f1e2502c31b068c36",
+      "package": "rich",
+      "lines": 38515,
+      "runs": [
+        {
+          "tool": "clonedigger",
+          "seconds": 0.7634443339775316,
+          "megabytes": 114.900992,
+          "pairs": 121,
+          "copied": 2322
+        },
+        {
+          "tool": "pylint",
+          "seconds": 5.075557417003438,
+          "megabytes": 156.647424,
+          "pairs": 478,
+          "copied": 11416
+        },
+        {
+          "tool": "jscpd",
+          "seconds": 1.028805999958422,
+          "megabytes": 224.493568,
+          "pairs": 176,
+          "copied": 12422
+        }
+      ]
+    },
+    {
+      "name": "SQLAlchemy",
+      "version": "2.1.4",
+      "location": "1f/44/311bac6b6ef81e4dfd0287d04900108b1f5c00c9761dd3c0a2b7b9d0f86b",
+      "archive": "sqlalchemy-2.1.4.tar.gz",
+      "sha256": "7bd7ad604487daa7eab8716471c29a7185f17b5287ce73bb7bc79fea050d8cfd",
+      "package": "lib/sqlalchemy",
+      "lines": 252707,
+      "runs": [
+        {
+          "tool": "clonedigger",
+          "seconds": 12.27346050000051,
+          "megabytes": 542.162944,
+          "pairs": 5341,
+          "copied": 32470
+        },
+        {
+          "tool": "pylint",
+          "seconds": 39.96640891599236,
+          "megabytes": 494.010368,
+          "pairs": 69,
+          "copied": 2526
+        },
+        {
+          "tool": "jscpd",
+          "seconds": 1.6800101670087315,
+          "megabytes": 363.249664,
+          "pairs": 83,
+          "copied": 2330
+        }
+      ]
+    },
+    {
+      "name": "Django",
+      "version": "6.1.2",
+      "location": "89/24/20d187a22ac821288b53c53b8f696019dcb0c7b4f973f052ade19392c74d",
+      "archive": "django-6.1.2.tar.gz",
+      "sha256": "a1e92451ccb8b514e91bbb3b6d186d20b4030558f116b5d9de6535455ff210b7",
+      "package": "django",
+      "lines": 165376,
+      "runs": [
+        {
+          "tool": "clonedigger",
+          "seconds": 13.550262667005882,
+          "megabytes": 453.328896,
+          "pairs": 5166,
+          "copied": 17014
+        },
+        {
+          "tool": "pylint",
+          "seconds": 84.15474054199876,
+          "megabytes": 433.618944,
+          "pairs": 198,
+          "copied": 3034
+        },
+        {
+          "tool": "jscpd",
+          "seconds": 3.3031997499638237,
+          "megabytes": 550.25664,
+          "pairs": 84,
+          "copied": 2674
+        }
+      ]
+    }
+  ]
+}

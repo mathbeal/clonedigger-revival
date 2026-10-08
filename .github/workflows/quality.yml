@@ -34,10 +34,10 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
       - run: uv lock --check
-      - run: uv run ruff format --check src tests vulture_whitelist.py
-      - run: uv run ruff check src tests vulture_whitelist.py
-      - run: uv run pylint src tests
-      - run: uvx pydoclint==0.10.1 src
+      - run: uv run ruff format --check src tests benchmarks vulture_whitelist.py
+      - run: uv run ruff check src tests benchmarks vulture_whitelist.py
+      - run: uv run pylint src tests benchmarks
+      - run: uvx pydoclint==0.10.1 src benchmarks
       # A test says what it checks in one line; a helper documents its arguments.
       - run: uvx pydoclint==0.10.1 --skip-checking-short-docstrings=True --exclude 'golden|samples' tests
       - run: uv run deptry src

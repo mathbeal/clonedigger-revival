@@ -118,20 +118,59 @@ ported. The original release is kept unmodified under `legacy/`.
 
 ## Compared with line and token tools
 
-Measured on 2026-10-08, with default settings and copies of at least 5 lines for
-jscpd 4.0.5 (`--format python --min-lines 5`) and pylint's `duplicate-code` (4 lines):
+[pylint](https://pylint.readthedocs.io)'s `duplicate-code` check compares lines, and
+[jscpd](https://github.com/kucherenko/jscpd) compares tokens, in any language: both
+find copies, and miss them once names change. Clone Digger compares syntax trees.
 
-| Code | Clone Digger | pylint `duplicate-code` | jscpd |
-|---|---|---|---|
-| `asyncio` of Python 3.14 (15,000 lines) | 174 clones | 31 | 3 |
-| avenir-mcp 0.5 (10,500 lines) | 27 | 0 | 1 |
+Measured on 2026-10-08 by `just compare`, which downloads each release from PyPI, checks
+its SHA-256 and runs the three tools on its package, tests left out, with copies of at
+least 5 lines: Clone Digger 0.0.1.dev0 (defaults), pylint 4.0.9
+(`--disable=all --enable=duplicate-code --min-similarity-lines=5`) and jscpd 4.0.5
+(`--format python --min-lines 5`), on an Apple M4 (24 GB) with Python 3.14.7. The raw
+figures are in [benchmarks/results.json](benchmarks/results.json).
 
-The counts are pairs: three copies of one block make three. Sampled by hand, Clone
-Digger's are real copies with renamed names, such as `sock_recv_into` and
-`sock_recvfrom` in `asyncio/selector_events.py`; precision over every pair has not been
-measured. The tools see different things: the one copy jscpd finds in avenir-mcp lies
-inside a large dictionary literal whose surrounding statements differ, which a tool that
-compares whole statements does not report. Run them together.
+Clones found, as pairs, and the share of the lines that lie in at least one copy:
+
+| Project | Lines | Clone Digger | pylint `duplicate-code` | jscpd |
+|---|--:|--:|--:|--:|
+| requests 2.34.2 | 6,385 | 17 (3.7 %) | 0 (0.0 %) | 3 (1.3 %) |
+| httpx 0.28.1 | 8,828 | 82 (19.8 %) | 18 (1.9 %) | 11 (3.8 %) |
+| Flask 3.1.3 | 9,199 | 49 (9.8 %) | 1 (1.5 %) | 2 (0.4 %) |
+| click 8.5.0 | 12,674 | 90 (6.6 %) | 1 (0.3 %) | 1 (0.2 %) |
+| rich 15.0.0 | 38,515 | 121 (6.0 %) | 478 (29.6 %) | 176 (32.3 %) |
+| SQLAlchemy 2.1.4 | 252,707 | 5,341 (12.8 %) | 69 (1.0 %) | 83 (0.9 %) |
+| Django 6.1.2 | 165,376 | 5,166 (10.3 %) | 198 (1.8 %) | 84 (1.6 %) |
+
+Time and largest memory held:
+
+| Project | Clone Digger | pylint `duplicate-code` | jscpd |
+|---|--:|--:|--:|
+| requests 2.34.2 | 0.2 s, 46 MB | 0.7 s, 98 MB | 0.3 s, 122 MB |
+| httpx 0.28.1 | 0.2 s, 52 MB | 1.1 s, 116 MB | 0.3 s, 128 MB |
+| Flask 3.1.3 | 0.2 s, 46 MB | 1.4 s, 130 MB | 0.3 s, 127 MB |
+| click 8.5.0 | 0.3 s, 63 MB | 1.8 s, 143 MB | 0.4 s, 170 MB |
+| rich 15.0.0 | 0.8 s, 115 MB | 5.1 s, 157 MB | 1.0 s, 224 MB |
+| SQLAlchemy 2.1.4 | 12.3 s, 542 MB | 40.0 s, 494 MB | 1.7 s, 363 MB |
+| Django 6.1.2 | 13.6 s, 453 MB | 84.2 s, 434 MB | 3.3 s, 550 MB |
+
+How to read them:
+
+- **Pairs grow fast with families of copies**: n copies of one block make n(n-1)/2
+  pairs. Most of Django's pairs come from `conf/locale`, a hundred `formats.py` files
+  that differ only in their values; most of SQLAlchemy's from the proxies of
+  `ext/asyncio` and its bundled test suite. The share of lines is the fairer measure.
+- **What Clone Digger adds** are copies whose names differ: in httpx, the methods of
+  `Client` and `AsyncClient`; in Flask, the shortcuts `get`, `post`, `delete` and the
+  like, each the same code with another verb.
+- **What it does not see** is a copy inside one statement. In rich, 30 % of the lines
+  are tables of Unicode widths, one large literal per version of Unicode: pylint and
+  jscpd report them, Clone Digger compares statements and does not.
+- **Some pairs overlap**: in a run of similar statements, a window and the same window
+  shifted by two statements can be reported as a pair, as 1.1.0 did.
+- **Precision is not measured yet.** Pairs sampled by hand are real copies; a labelled
+  sample is on the [roadmap](ROADMAP.md).
+
+Run them together: they see different things.
 
 ## Speed and memory
 
@@ -163,6 +202,7 @@ measures it again.
 just check     # lint, types, tests at 100 % of lines and branches, dead code, vocabulary, lockfile
 just hygiene   # typos and licences (REUSE)
 just mutate    # mutation testing: every mutant must be caught
+just compare   # Clone Digger, pylint and jscpd on pinned releases (needs Node.js)
 just golden    # record the original's answers again (needs Docker)
 ```
 

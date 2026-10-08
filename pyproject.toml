@@ -54,6 +54,9 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "PLR2004", "INP001"]
+# A script run on its own, not a package, that downloads pinned archives (checked by
+# their SHA-256) and runs the three tools it compares.
+"benchmarks/**" = ["INP001", "S310", "S404", "S603", "S607"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -61,7 +64,7 @@ convention = "google"
 [tool.mypy]
 strict = true
 python_version = "3.12"
-files = ["src", "tests"]
+files = ["src", "tests", "benchmarks"]
 exclude = ["^legacy/", "^tests/golden/", "^tests/samples/"]
 
 [tool.pytest.ini_options]
