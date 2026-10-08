@@ -18,22 +18,42 @@ INPUTS = Path(__file__).parent / "golden" / "inputs"
 
 
 class _Tags(HTMLParser):
-    """Collect the tags of a page, and check that each opened one is closed."""
+    """Collect the tags of a page, and check that each opened one is closed.
+
+    Attributes:
+        VOID: The tags that are never closed.
+        open: The tags opened and not closed yet, innermost last.
+        seen: Every tag opened, in order.
+    """
 
     VOID = frozenset({"meta"})
+    open: list[str]
+    seen: list[str]
 
     def __init__(self) -> None:
+        """Start with no tag seen."""
         super().__init__()
         self.open: list[str] = []
         self.seen: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        """Record an opened tag.
+
+        Args:
+            tag: Its name.
+            attrs: Its attributes, unused.
+        """
         del attrs
         self.seen.append(tag)
         if tag not in self.VOID:
             self.open.append(tag)
 
     def handle_endtag(self, tag: str) -> None:
+        """Check that a closed tag is the last one opened.
+
+        Args:
+            tag: Its name.
+        """
         assert self.open.pop() == tag
 
 

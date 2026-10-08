@@ -203,6 +203,15 @@ def test_every_option_reaches_the_settings(monkeypatch: pytest.MonkeyPatch) -> N
     received: list[Settings] = []
 
     def record(files: object, settings: Settings) -> list[Clone]:
+        """Stand in for the detection: keep the settings it receives.
+
+        Args:
+            files: The files, unused.
+            settings: The settings the command built.
+
+        Returns:
+            No clone.
+        """
         del files
         received.append(settings)
         return []

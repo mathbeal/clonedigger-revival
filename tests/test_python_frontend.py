@@ -18,6 +18,9 @@ HERE = Path("example.py")
 def labels(text: str) -> list[list[str]]:
     """Read source and list, for each sequence, the label of each statement.
 
+    Args:
+        text: Python source.
+
     Returns:
         One list of labels per sequence, in the order they were found.
     """

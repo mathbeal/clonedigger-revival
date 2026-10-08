@@ -50,6 +50,11 @@ def test_light_candidates_are_dropped() -> None:
 def _run_pairs(tree: SuffixTree[str], *args: object) -> list[list[str]]:
     """Run the search and write its pairs as sorted strings.
 
+    Args:
+        tree: The suffix tree.
+        *args: The threshold, the weight and the size, as `iter_best_max_substrings`
+            takes them.
+
     Returns:
         Each pair as two strings, the pairs sorted.
     """
@@ -65,6 +70,14 @@ def test_one_side_reaching_the_threshold_is_enough(words: tuple[str, str]) -> No
         tree.add(list(word))
 
     def capitals_count(run: Sequence[str]) -> float:
+        """Weigh a run: 1 for a capital, a quarter for anything else.
+
+        Args:
+            run: The run.
+
+        Returns:
+            Its weight.
+        """
         return sum(1 if element.isupper() else 0.25 for element in run)
 
     # "AB" weighs exactly 2, "ab" only 0.5: the pair stands on its heavier side.

@@ -89,6 +89,14 @@ def largest_first(clones: Sequence[Clone]) -> list[Clone]:
 
 
 def _order(clone: Clone) -> tuple[int, str, int, str, int]:
+    """Give the key that sorts the clones.
+
+    Args:
+        clone: A clone.
+
+    Returns:
+        Minus its number of lines, then the path and first line of each copy.
+    """
     # Largest first; then by place, so that the same clones always print in one order.
     first, second = Span.of(clone.first), Span.of(clone.second)
     return (-len(covered_lines(clone.first)), first.path, first.start, second.path, second.start)
@@ -145,6 +153,14 @@ ORIGINAL_URI: Final = "http://clonedigger.sourceforge.net"
 
 
 def _location(span: Span) -> dict[str, object]:
+    """Write where a copy lies, as SARIF describes a location.
+
+    Args:
+        span: The copy.
+
+    Returns:
+        A SARIF `location`: its file and its first and last lines.
+    """
     return {
         "physicalLocation": {
             "artifactLocation": {"uri": span.path},

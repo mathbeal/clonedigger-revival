@@ -1,5 +1,6 @@
 # Copyright 2008 Peter Bulychev (Clone Digger 1.1.0, clonedigger.py)
-# Copyright 2026 Mathieu Béal (modified 2026-10-07: rewritten with argparse)
+# Copyright 2026 Mathieu Béal (modified 2026-10-07: rewritten with argparse;
+# 2026-10-08: every function documented)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """The `clonedigger` command: find the clones in Python files and directories."""
@@ -25,6 +26,11 @@ if TYPE_CHECKING:
 
 
 def _parser() -> argparse.ArgumentParser:
+    """Describe the command line: the paths, the report format and the thresholds.
+
+    Returns:
+        The parser, with the defaults of `Settings`.
+    """
     defaults = Settings()
     parser = argparse.ArgumentParser(
         prog="clonedigger",
@@ -85,6 +91,11 @@ REPORTS: Final[dict[str, Callable[[Sequence[Clone]], str]]] = {
 
 
 def _syntax_hint() -> str:
+    """Explain which syntax the running Python can read, after a file it cannot parse.
+
+    Returns:
+        The explanation, indented under the error.
+    """
     version = f"{sys.version_info.major}.{sys.version_info.minor}"
     return (
         f"  This Python ({version}) reads the syntax of Python {version} and earlier: code "
@@ -94,6 +105,14 @@ def _syntax_hint() -> str:
 
 
 def _prefixes(text: str) -> tuple[str, ...]:
+    """Read the value of --func-prefixes.
+
+    Args:
+        text: Prefixes separated by commas, such as `test_, _bench`.
+
+    Returns:
+        The prefixes, stripped, without empty ones.
+    """
     return tuple(prefix.strip() for prefix in text.split(",") if prefix.strip())
 
 

@@ -21,6 +21,10 @@ GOLDEN = json.loads((Path(__file__).parent / "golden" / "anti_unification.json")
 def tree(label: str, *children: Node) -> Node:
     """Build a node the way the reference script writes it.
 
+    Args:
+        label: The node's label.
+        *children: Its children, in order.
+
     Returns:
         The node.
     """
@@ -48,6 +52,9 @@ CASES = {
 
 def show(node: Node) -> str:
     """Write a tree as the reference script does.
+
+    Args:
+        node: The tree.
 
     Returns:
         The tree as text, every variable written VAR.

@@ -48,6 +48,9 @@ CONSTRUCTS = [
 def labels(node: Node) -> set[str]:
     """Collect every label of a tree.
 
+    Args:
+        node: The tree.
+
     Returns:
         The labels of the node and of all its descendants.
     """

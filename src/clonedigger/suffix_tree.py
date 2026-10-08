@@ -1,5 +1,6 @@
 # Copyright 2008 Peter Bulychev (Clone Digger 1.1.0, suffix_tree.py)
-# Copyright 2026 Mathieu Béal (modified 2026-10-07: ported to Python 3, typed, generic)
+# Copyright 2026 Mathieu Béal (modified 2026-10-07: ported to Python 3, typed, generic;
+# 2026-10-08: every function documented)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """A suffix trie, to find the runs of elements that occur in two places.
@@ -29,6 +30,13 @@ class _Position[T]:
 
     The suffix is not copied: it is `string[start:]`, read when a run is reported.
     Copying every suffix made the memory grow with the square of a string's length.
+
+    Attributes:
+        string: The whole string the suffix belongs to.
+        start: Where the suffix starts in it.
+        position: How far into the suffix this place is.
+        previous: The code of the element just before the suffix; None at the start of
+            the string.
     """
 
     string: Sequence[T]
@@ -50,6 +58,14 @@ class _Position[T]:
 
 @dataclass(slots=True)
 class _TrieNode[T]:
+    """A node of the trie: one code further down every suffix that passes it.
+
+    Attributes:
+        children: The next node for each code that follows.
+        passing: The places of the suffixes that go on below this node.
+        ending: The places of the suffixes that end here.
+    """
+
     children: dict[Hashable, _TrieNode[T]] = field(default_factory=dict)
     passing: list[_Position[T]] = field(default_factory=list)
     ending: list[_Position[T]] = field(default_factory=list)
@@ -108,6 +124,13 @@ class SuffixTree[T]:
             self._add_suffix(string, start, previous)
 
     def _add_suffix(self, string: Sequence[T], start: int, previous: Hashable | None) -> None:
+        """Walk one suffix down the trie, recording its place in every node it passes.
+
+        Args:
+            string: The string.
+            start: Where the suffix starts.
+            previous: The code of the element just before it; None at the start.
+        """
         node = self._root
         for position in range(len(string) - start):
             node.passing.append(_Position(string, start, position, previous))
@@ -139,6 +162,15 @@ class SuffixTree[T]:
         sizes: dict[tuple[int, int, int], float] = {}
 
         def heavy(place: _Position[T], length: int) -> bool:
+            """Tell whether a run is large enough, weighing each run once.
+
+            Args:
+                place: Where the run starts.
+                length: How many elements it holds.
+
+            Returns:
+                Whether its size reaches the threshold.
+            """
             key = (id(place.string), place.start, length)
             if key not in sizes:
                 sizes[key] = size(place.run(length))
@@ -147,6 +179,15 @@ class SuffixTree[T]:
         def find_from(
             node: _TrieNode[T], remaining: float
         ) -> Iterator[tuple[Sequence[T], Sequence[T]]]:
+            """Report the pairs that meet at a node and below it, once heavy enough.
+
+            Args:
+                node: The node of the trie.
+                remaining: The weight still missing along the path from the root.
+
+            Yields:
+                The pairs of left-diverse runs that meet there, or deeper.
+            """
             if remaining <= 0:
                 for one, two, back in _comparisons(node):
                     # A run is left-diverse when it starts a string, or follows different

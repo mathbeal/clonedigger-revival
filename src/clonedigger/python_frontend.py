@@ -1,5 +1,6 @@
 # Copyright 2008 Peter Bulychev (Clone Digger 1.1.0, python_compiler.py)
-# Copyright 2026 Mathieu Béal (modified 2026-10-07: rewritten on the ast module)
+# Copyright 2026 Mathieu Béal (modified 2026-10-07: rewritten on the ast module;
+# 2026-10-08: every function documented)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Read Python source into the trees and the statement sequences Clone Digger compares.
@@ -104,6 +105,14 @@ _UNBUILT: Final = Node("")
 
 
 def _is_docstring(statement: ast.stmt) -> bool:
+    """Tell whether a statement is a lone string, such as a docstring.
+
+    Args:
+        statement: The statement.
+
+    Returns:
+        Whether it is an expression made of a string constant only.
+    """
     return (
         isinstance(statement, ast.Expr)
         and isinstance(statement.value, ast.Constant)

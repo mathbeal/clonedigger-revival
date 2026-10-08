@@ -148,6 +148,11 @@ def test_rough_hash_tells_shapes_apart(depth: int) -> None:
 def assignment(name: str, line: int, path: str) -> Statement:
     """Build a one-line assignment statement.
 
+    Args:
+        name: The name assigned to.
+        line: The line it stands on.
+        path: Its file.
+
     Returns:
         The statement.
     """
@@ -195,6 +200,11 @@ def test_finds_the_clones_of_the_original_on_real_files(name: str) -> None:
 
 def renamed(count: int, line: int, side: str) -> Statement:
     """Build a call whose arguments all differ on the other side.
+
+    Args:
+        count: How many arguments.
+        line: The line it stands on.
+        side: "a" or "b": the file, and the prefix of every argument.
 
     Returns:
         A statement whose anti-unification against its twin costs `count`: each
@@ -279,6 +289,15 @@ def test_a_statement_joins_a_cluster_at_exactly_the_threshold() -> None:
     """Joining costs at most the threshold; one more and a new cluster starts."""
 
     def wide(prefix: str, count: int) -> Statement:
+        """Build a call with distinct arguments.
+
+        Args:
+            prefix: What every argument's name starts with.
+            count: How many arguments.
+
+        Returns:
+            The statement.
+        """
         leaves = tuple(Node(f"{prefix}{index}") for index in range(count))
         return Statement(Node("Call", leaves), Path("a.py"))
 
@@ -302,6 +321,15 @@ def test_refining_skips_small_windows_and_goes_on() -> None:
     """A window too short in lines is passed over, and the next one is tried."""
 
     def spread(lines: set[int], side: str) -> Statement:
+        """Build a statement that spans the given lines.
+
+        Args:
+            lines: Its lines.
+            side: "a" or "b", its file.
+
+        Returns:
+            The statement.
+        """
         return Statement(Node("Pass", lines=lines), Path(f"{side}.py"))
 
     first = (spread({1}, "a"), spread({2, 3, 4}, "a"), spread({5, 6, 7}, "a"))
@@ -345,6 +373,16 @@ def test_a_small_first_window_does_not_stop_the_search() -> None:
     """A window too short in lines is skipped, and the next one of that length is tried."""
 
     def statement(leaves: int, lines: set[int], side: str) -> Statement:
+        """Build a call whose arguments all differ on the other side.
+
+        Args:
+            leaves: How many arguments for each line.
+            lines: The lines it spans.
+            side: "a" or "b": its file, and the prefix of every argument.
+
+        Returns:
+            The statement.
+        """
         names = tuple(Node(f"{side}{line}_{index}") for index in range(leaves) for line in lines)
         return Statement(Node("Call", names, lines=lines), Path(f"{side}.py"))
 
@@ -376,6 +414,14 @@ def test_joining_ties_go_to_the_first_cluster() -> None:
     """A statement that costs the same to two clusters joins the first one."""
 
     def call(*names: str) -> Statement:
+        """Build a call of the given names.
+
+        Args:
+            *names: Its arguments.
+
+        Returns:
+            The statement.
+        """
         return Statement(Node("Call", tuple(Node(name) for name in names)), Path("x.py"))
 
     first, second = call("p1", "p2", "q"), call("r1", "r2", "q")
@@ -387,6 +433,10 @@ def test_joining_ties_go_to_the_first_cluster() -> None:
 
 def exhaustive_refine(first: tuple[Statement, ...], second: tuple[Statement, ...]) -> list[Clone]:
     """Refine a candidate as Clone Digger 1.1.0 did: every length, every start.
+
+    Args:
+        first: One side of the candidate.
+        second: The other, as long.
 
     Returns:
         The clones, in the order the stack of parts gives them.

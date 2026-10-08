@@ -46,6 +46,13 @@ repos:
         language: system
         files: ^src/.*\.py$
         pass_filenames: false
+      # A test says what it checks in one line; a helper documents its arguments.
+      - id: pydoclint-tests
+        name: pydoclint (helpers of the tests)
+        entry: uvx pydoclint==0.10.1 --skip-checking-short-docstrings=True --exclude 'golden|samples' tests
+        language: system
+        files: ^tests/.*\.py$
+        pass_filenames: false
       - id: reuse
         name: reuse lint (copyright and licence of every file)
         entry: uvx --from reuse[charset-normalizer]==6.2.0 reuse lint

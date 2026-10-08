@@ -1,6 +1,7 @@
 # Copyright 2008 Peter Bulychev (Clone Digger 1.1.0, clone_detection_algorithm.py)
 # Copyright 2026 Mathieu Béal (modified 2026-10-07: ported to Python 3, split in steps;
-# 2026-10-08: windows searched in square time, labels hashed the same in every run)
+# 2026-10-08: windows searched in square time, labels hashed the same in every run,
+# every function documented)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Find the clones in a set of files: the pipeline of Clone Digger, step by step.
@@ -228,14 +229,41 @@ def mark_statements(statements: Sequence[Statement], clusters: Sequence[Cluster]
 
 
 def _homes(clusters: Sequence[Cluster]) -> dict[int, Cluster]:
+    """Find the cluster each statement was gathered into.
+
+    Args:
+        clusters: The clusters of a bucket.
+
+    Returns:
+        Each cluster, keyed by the identity of the trees it holds.
+    """
     return {id(t): c for c in clusters for t in c.trees}  # pragma: no mutate - time only
 
 
 def _known_distance(home: Cluster | None, tree: Node) -> float:
+    """Weigh a statement against the cluster it was gathered into.
+
+    Args:
+        home: That cluster, or None if the statement was not gathered.
+        tree: The statement's tree.
+
+    Returns:
+        Their distance; infinity without a cluster.
+    """
     return math.inf if home is None else _distance_to(home, tree, math.inf)  # pragma: no mutate
 
 
 def _distance_to(cluster: Cluster, tree: Node, limit: float) -> float:
+    """Weigh how far a statement is from the pattern of a cluster.
+
+    Args:
+        cluster: The cluster.
+        tree: The statement's tree.
+        limit: The weighing stops once it reaches this much.
+
+    Returns:
+        The distance, or a value of at least `limit`.
+    """
     # The limit only saves time: the closest cluster is the same without it.
     return sum(difference(cluster.pattern or tree, tree, limit))  # pragma: no mutate
 
@@ -271,10 +299,36 @@ def drop_long_equal_runs(sequences: Sequence[Sequence[Statement]]) -> list[list[
 def _candidates(
     sequences: Sequence[Sequence[Statement]], threshold: int
 ) -> Iterator[tuple[tuple[Statement, ...], tuple[Statement, ...]]]:
+    """Find the runs of marks that occur twice, with a suffix tree.
+
+    Args:
+        sequences: The marked statement sequences.
+        threshold: The fewest lines a run must weigh and span.
+
+    Returns:
+        The candidate pairs of runs, one at a time.
+    """
+
     def mark_of(statement: Statement) -> Hashable:
+        """Read the mark of a statement: the cluster it was given.
+
+        Args:
+            statement: The statement.
+
+        Returns:
+            Its mark.
+        """
         return statement.mark
 
     def weight(code: Hashable) -> float:
+        """Weigh one mark.
+
+        Args:
+            code: The mark, a cluster.
+
+        Returns:
+            The most lines a statement of that cluster spans.
+        """
         # A run is as heavy as the largest statement each of its clusters has received;
         # every mark is a cluster.
         return cast("Cluster", code).max_covered_lines  # pragma: no mutate - cast does nothing
@@ -311,6 +365,15 @@ def refine(
 def _refine_one(
     candidate: tuple[tuple[Statement, ...], tuple[Statement, ...]], settings: Settings
 ) -> list[Clone]:
+    """Shrink one candidate to its clones: the longest window, then what lies around it.
+
+    Args:
+        candidate: Two runs of statements with the same marks.
+        settings: The size and distance thresholds.
+
+    Returns:
+        The clones found in it.
+    """
     clones: list[Clone] = []
     parts = [candidate]
     while parts:
@@ -389,16 +452,46 @@ def _longest_window(
 
 
 def _large(one: Sequence[Statement], other: Sequence[Statement], settings: Settings) -> bool:
+    """Tell whether both sides of a window span enough lines.
+
+    Args:
+        one: One side.
+        other: The other.
+        settings: The size threshold.
+
+    Returns:
+        Whether each side spans at least `size_threshold` lines.
+    """
     return min(len(covered_lines(one)), len(covered_lines(other))) >= settings.size_threshold
 
 
 def _close(one: Sequence[Statement], other: Sequence[Statement], settings: Settings) -> bool:
+    """Tell whether the two sides of a window are close enough to be a clone.
+
+    Args:
+        one: One side.
+        other: The other, as long.
+        settings: The distance threshold.
+
+    Returns:
+        Whether their distance is under `distance_threshold`.
+    """
     # Only whether the distance is under the threshold matters: the weighing stops there.
     limit = settings.distance_threshold
     return _sequence_distance(one, other, limit) < limit
 
 
 def _sequence_distance(one: Sequence[Statement], other: Sequence[Statement], limit: float) -> float:
+    """Weigh how far two runs of statements are, joined each under one root.
+
+    Args:
+        one: One run.
+        other: The other, as long.
+        limit: The weighing stops once it reaches this much.
+
+    Returns:
+        Their anti-unification distance, or a value of at least `limit`.
+    """
     pair = (sequence_tree(one), sequence_tree(other))
     return sum(difference(*pair, limit))  # pragma: no mutate - the limit only saves time
 
@@ -419,6 +512,15 @@ def without_dominated(clones: Sequence[Clone]) -> list[Clone]:
             by_statement.setdefault(id(statement), []).append(clone)
 
     def dominated(clone: Clone) -> bool:
+        """Tell whether another clone holds both copies of this one.
+
+        Args:
+            clone: The clone.
+
+        Returns:
+            Whether a statement around its first copy is one side of a clone whose
+            other side holds a statement around its second copy.
+        """
         outer_second = {id(ancestor) for ancestor in clone.second[0].ancestors}
         for ancestor in clone.first[0].ancestors:
             for other in by_statement.get(id(ancestor), []):

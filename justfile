@@ -23,6 +23,7 @@ lint:
     uv run ruff check src tests vulture_whitelist.py
     uv run pylint src tests
     uvx pydoclint==0.10.1 src
+    uvx pydoclint==0.10.1 --skip-checking-short-docstrings=True --exclude 'golden|samples' tests
     uv run deptry src
 
 types:

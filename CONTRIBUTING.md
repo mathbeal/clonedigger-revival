@@ -33,7 +33,11 @@ is caught today; keep it so.
 
 ## Tests
 
-Every test has a docstring that says the behaviour it checks, in one sentence. Prefer a
+Every test has a docstring that says the behaviour it checks, in one sentence.
+Every other function, method and class, private and nested ones included, has a
+docstring in the Google style, with its `Args`, `Returns`, `Yields`, `Raises` and
+`Attributes` sections: pydoclint checks them, in `src` and in the helpers of the tests,
+and `tests/test_docstrings.py` checks that none is missing. Prefer a
 property (Hypothesis) when the behaviour holds for every input, and a recorded answer of
 the original when it is about faithfulness.
 

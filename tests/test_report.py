@@ -21,6 +21,10 @@ from clonedigger.tree import Node
 def run(path: str, lines: range) -> tuple[Statement, ...]:
     """Build a run of one-line statements.
 
+    Args:
+        path: Their file.
+        lines: Their lines, one statement each.
+
     Returns:
         One statement per line.
     """

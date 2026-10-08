@@ -38,6 +38,8 @@ jobs:
       - run: uv run ruff check src tests vulture_whitelist.py
       - run: uv run pylint src tests
       - run: uvx pydoclint==0.10.1 src
+      # A test says what it checks in one line; a helper documents its arguments.
+      - run: uvx pydoclint==0.10.1 --skip-checking-short-docstrings=True --exclude 'golden|samples' tests
       - run: uv run deptry src
       - run: uv run vulture
       - run: uvx lexdrift check src

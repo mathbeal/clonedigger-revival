@@ -1,5 +1,6 @@
 # Copyright 2008 Peter Bulychev (Clone Digger 1.1.0, html_report.py)
-# Copyright 2026 Mathieu Béal (modified 2026-10-07: rewritten, one self-contained page)
+# Copyright 2026 Mathieu Béal (modified 2026-10-07: rewritten, one self-contained page;
+# 2026-10-08: every function documented)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Write the clones as one HTML page: each clone side by side, its differences marked.
@@ -90,6 +91,16 @@ def highlight(first: str, second: str) -> tuple[str, str]:
 
 
 def _clone_table(number: int, clone: Clone, sources: Mapping[Path, Sequence[str]]) -> str:
+    """Write one clone as a heading and a table, its two copies side by side.
+
+    Args:
+        number: The clone's number in the report, from 1.
+        clone: The clone.
+        sources: The lines of every file a clone comes from.
+
+    Returns:
+        The HTML of the clone, statement against statement, differences marked.
+    """
     first, second = Span.of(clone.first), Span.of(clone.second)
     rows = []
     # Both copies of a clone have as many statements.

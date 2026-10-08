@@ -1,5 +1,6 @@
 # Copyright 2008 Peter Bulychev (Clone Digger 1.1.0, anti_unification.py)
-# Copyright 2026 Mathieu Béal (modified 2026-10-07: ported to Python 3, typed, one pass)
+# Copyright 2026 Mathieu Béal (modified 2026-10-07: ported to Python 3, typed, one pass;
+# 2026-10-08: every function documented)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Anti-unification: the most specific pattern that two trees are both instances of.
@@ -117,6 +118,15 @@ def anti_unify(first: Node, second: Node, *, share_variables: bool = True) -> An
     seen: dict[tuple[Node, Node], Variable] = {}
 
     def hole(one: Node, other: Node) -> Variable:
+        """Give a pair of differing subtrees its variable, and record what it stands for.
+
+        Args:
+            one: The subtree of the first tree.
+            other: The subtree of the second.
+
+        Returns:
+            The variable of that pair: the one it already has, when variables are shared.
+        """
         if share_variables and (one, other) in seen:
             return seen[one, other]
         variable = Variable()
@@ -126,6 +136,15 @@ def anti_unify(first: Node, second: Node, *, share_variables: bool = True) -> An
         return variable
 
     def walk(one: Node, other: Node) -> Node:
+        """Anti-unify two subtrees, from their roots down.
+
+        Args:
+            one: A subtree of the first tree.
+            other: The subtree at the same place in the second.
+
+        Returns:
+            Their pattern: kept where they agree, a variable where they differ.
+        """
         if one == other:
             return one
         if one.label != other.label or len(one.children) != len(other.children):
