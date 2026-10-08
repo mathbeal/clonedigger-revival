@@ -18,22 +18,22 @@
       "runs": [
         {
           "tool": "clonedigger",
-          "seconds": 0.1623952920199372,
-          "megabytes": 46.071808,
+          "seconds": 0.21848412498366088,
+          "megabytes": 46.268416,
           "pairs": 17,
           "copied": 237
         },
         {
           "tool": "pylint",
-          "seconds": 0.703911209013313,
-          "megabytes": 98.107392,
+          "seconds": 1.0787419580155984,
+          "megabytes": 98.451456,
           "pairs": 0,
           "copied": 0
         },
         {
           "tool": "jscpd",
-          "seconds": 0.27535416604951024,
-          "megabytes": 122.30656,
+          "seconds": 0.4784446249832399,
+          "megabytes": 122.88,
           "pairs": 3,
           "copied": 85
         }
@@ -50,22 +50,22 @@
       "runs": [
         {
           "tool": "clonedigger",
-          "seconds": 0.21977733296807855,
-          "megabytes": 51.560448,
+          "seconds": 0.22146079200319946,
+          "megabytes": 51.478528,
           "pairs": 82,
           "copied": 1747
         },
         {
           "tool": "pylint",
-          "seconds": 1.129877083003521,
-          "megabytes": 115.785728,
+          "seconds": 1.4072370840003714,
+          "megabytes": 115.769344,
           "pairs": 18,
           "copied": 166
         },
         {
           "tool": "jscpd",
-          "seconds": 0.3268862499971874,
-          "megabytes": 128.073728,
+          "seconds": 0.33161633304553106,
+          "megabytes": 127.893504,
           "pairs": 11,
           "copied": 333
         }
@@ -82,22 +82,22 @@
       "runs": [
         {
           "tool": "clonedigger",
-          "seconds": 0.16626487497705966,
-          "megabytes": 46.350336,
+          "seconds": 0.1657615840085782,
+          "megabytes": 46.415872,
           "pairs": 49,
           "copied": 898
         },
         {
           "tool": "pylint",
-          "seconds": 1.3545437920256518,
-          "megabytes": 129.581056,
+          "seconds": 1.5625441250158474,
+          "megabytes": 129.531904,
           "pairs": 1,
           "copied": 137
         },
         {
           "tool": "jscpd",
-          "seconds": 0.3203359160106629,
-          "megabytes": 126.976,
+          "seconds": 0.31619070796296,
+          "megabytes": 126.550016,
           "pairs": 2,
           "copied": 40
         }
@@ -114,24 +114,88 @@
       "runs": [
         {
           "tool": "clonedigger",
-          "seconds": 0.3272661669761874,
-          "megabytes": 63.176704,
+          "seconds": 0.3306826670304872,
+          "megabytes": 63.24224,
           "pairs": 90,
           "copied": 837
         },
         {
           "tool": "pylint",
-          "seconds": 1.8209547080332413,
-          "megabytes": 143.44192,
+          "seconds": 2.0563063339795917,
+          "megabytes": 143.425536,
           "pairs": 1,
           "copied": 40
         },
         {
           "tool": "jscpd",
-          "seconds": 0.3865258749574423,
-          "megabytes": 170.377216,
+          "seconds": 0.4317595830070786,
+          "megabytes": 134.873088,
           "pairs": 1,
           "copied": 22
+        }
+      ]
+    },
+    {
+      "name": "FastAPI",
+      "version": "0.142.4",
+      "location": "b8/2c/d69ce63c27bf9c5e574ab425118390102924503b4b3cdf33c07a69744dd2",
+      "archive": "fastapi-0.142.4.tar.gz",
+      "sha256": "7fe2e254a0a948b88f432b02b8f627463285248233bba0998ed9640191e2ff57",
+      "package": "fastapi",
+      "lines": 22171,
+      "runs": [
+        {
+          "tool": "clonedigger",
+          "seconds": 0.38117404194781557,
+          "megabytes": 71.335936,
+          "pairs": 134,
+          "copied": 9624
+        },
+        {
+          "tool": "pylint",
+          "seconds": 2.2686070000054315,
+          "megabytes": 139.706368,
+          "pairs": 42,
+          "copied": 5775
+        },
+        {
+          "tool": "jscpd",
+          "seconds": 0.4275566249853,
+          "megabytes": 173.064192,
+          "pairs": 23,
+          "copied": 1041
+        }
+      ]
+    },
+    {
+      "name": "FastMCP",
+      "version": "4.0.11",
+      "location": "e4/ca/e76fde836e6e443f49b1a16ad91fa71715ec220141261a290c9241024857",
+      "archive": "fastmcp-4.0.11.tar.gz",
+      "sha256": "55fc7b8e25d4f8365818ba93f7008d1b6e646ce7fe8ae49342687243ccbef9f2",
+      "package": "fastmcp_slim/fastmcp",
+      "lines": 80586,
+      "runs": [
+        {
+          "tool": "clonedigger",
+          "seconds": 2.6557908749673516,
+          "megabytes": 175.816704,
+          "pairs": 987,
+          "copied": 8936
+        },
+        {
+          "tool": "pylint",
+          "seconds": 13.873302624968346,
+          "megabytes": 237.1584,
+          "pairs": 86,
+          "copied": 2110
+        },
+        {
+          "tool": "jscpd",
+          "seconds": 2.468425291997846,
+          "megabytes": 328.269824,
+          "pairs": 137,
+          "copied": 3849
         }
       ]
     },
@@ -146,22 +210,22 @@
       "runs": [
         {
           "tool": "clonedigger",
-          "seconds": 0.7634443339775316,
-          "megabytes": 114.900992,
+          "seconds": 1.0140877090161666,
+          "megabytes": 115.163136,
           "pairs": 121,
           "copied": 2322
         },
         {
           "tool": "pylint",
-          "seconds": 5.075557417003438,
-          "megabytes": 156.647424,
+          "seconds": 6.199098707991652,
+          "megabytes": 155.762688,
           "pairs": 478,
           "copied": 11416
         },
         {
           "tool": "jscpd",
-          "seconds": 1.028805999958422,
-          "megabytes": 224.493568,
+          "seconds": 1.2435749580035917,
+          "megabytes": 226.623488,
           "pairs": 176,
           "copied": 12422
         }
@@ -178,22 +242,22 @@
       "runs": [
         {
           "tool": "clonedigger",
-          "seconds": 12.27346050000051,
-          "megabytes": 542.162944,
+          "seconds": 15.294869375007693,
+          "megabytes": 526.483456,
           "pairs": 5341,
           "copied": 32470
         },
         {
           "tool": "pylint",
-          "seconds": 39.96640891599236,
-          "megabytes": 494.010368,
+          "seconds": 50.11109033395769,
+          "megabytes": 491.454464,
           "pairs": 69,
           "copied": 2526
         },
         {
           "tool": "jscpd",
-          "seconds": 1.6800101670087315,
-          "megabytes": 363.249664,
+          "seconds": 2.1349357499857433,
+          "megabytes": 369.147904,
           "pairs": 83,
           "copied": 2330
         }
@@ -210,22 +274,22 @@
       "runs": [
         {
           "tool": "clonedigger",
-          "seconds": 13.550262667005882,
-          "megabytes": 453.328896,
+          "seconds": 17.18506437499309,
+          "megabytes": 448.380928,
           "pairs": 5166,
           "copied": 17014
         },
         {
           "tool": "pylint",
-          "seconds": 84.15474054199876,
-          "megabytes": 433.618944,
+          "seconds": 102.10722374997567,
+          "megabytes": 428.457984,
           "pairs": 198,
           "copied": 3034
         },
         {
           "tool": "jscpd",
-          "seconds": 3.3031997499638237,
-          "megabytes": 550.25664,
+          "seconds": 4.138606624968816,
+          "megabytes": 542.785536,
           "pairs": 84,
           "copied": 2674
         }

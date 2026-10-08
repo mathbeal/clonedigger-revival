@@ -137,6 +137,8 @@ Clones found, as pairs, and the share of the lines that lie in at least one copy
 | httpx 0.28.1 | 8,828 | 82 (19.8 %) | 18 (1.9 %) | 11 (3.8 %) |
 | Flask 3.1.3 | 9,199 | 49 (9.8 %) | 1 (1.5 %) | 2 (0.4 %) |
 | click 8.5.0 | 12,674 | 90 (6.6 %) | 1 (0.3 %) | 1 (0.2 %) |
+| FastAPI 0.142.4 | 22,171 | 134 (43.4 %) | 42 (26.0 %) | 23 (4.7 %) |
+| FastMCP 4.0.11 | 80,586 | 987 (11.1 %) | 86 (2.6 %) | 137 (4.8 %) |
 | rich 15.0.0 | 38,515 | 121 (6.0 %) | 478 (29.6 %) | 176 (32.3 %) |
 | SQLAlchemy 2.1.4 | 252,707 | 5,341 (12.8 %) | 69 (1.0 %) | 83 (0.9 %) |
 | Django 6.1.2 | 165,376 | 5,166 (10.3 %) | 198 (1.8 %) | 84 (1.6 %) |
@@ -145,13 +147,18 @@ Time and largest memory held:
 
 | Project | Clone Digger | pylint `duplicate-code` | jscpd |
 |---|--:|--:|--:|
-| requests 2.34.2 | 0.2 s, 46 MB | 0.7 s, 98 MB | 0.3 s, 122 MB |
-| httpx 0.28.1 | 0.2 s, 52 MB | 1.1 s, 116 MB | 0.3 s, 128 MB |
-| Flask 3.1.3 | 0.2 s, 46 MB | 1.4 s, 130 MB | 0.3 s, 127 MB |
-| click 8.5.0 | 0.3 s, 63 MB | 1.8 s, 143 MB | 0.4 s, 170 MB |
-| rich 15.0.0 | 0.8 s, 115 MB | 5.1 s, 157 MB | 1.0 s, 224 MB |
-| SQLAlchemy 2.1.4 | 12.3 s, 542 MB | 40.0 s, 494 MB | 1.7 s, 363 MB |
-| Django 6.1.2 | 13.6 s, 453 MB | 84.2 s, 434 MB | 3.3 s, 550 MB |
+| requests 2.34.2 | 0.2 s, 46 MB | 1.1 s, 98 MB | 0.5 s, 123 MB |
+| httpx 0.28.1 | 0.2 s, 51 MB | 1.4 s, 116 MB | 0.3 s, 128 MB |
+| Flask 3.1.3 | 0.2 s, 46 MB | 1.6 s, 130 MB | 0.3 s, 127 MB |
+| click 8.5.0 | 0.3 s, 63 MB | 2.1 s, 143 MB | 0.4 s, 135 MB |
+| FastAPI 0.142.4 | 0.4 s, 71 MB | 2.3 s, 140 MB | 0.4 s, 173 MB |
+| FastMCP 4.0.11 | 2.7 s, 176 MB | 13.9 s, 237 MB | 2.5 s, 328 MB |
+| rich 15.0.0 | 1.0 s, 115 MB | 6.2 s, 156 MB | 1.2 s, 227 MB |
+| SQLAlchemy 2.1.4 | 15.3 s, 526 MB | 50.1 s, 491 MB | 2.1 s, 369 MB |
+| Django 6.1.2 | 17.2 s, 448 MB | 102.1 s, 428 MB | 4.1 s, 543 MB |
+
+Times vary by about a quarter from one run to the next on a desktop machine; the
+clones do not vary.
 
 How to read them:
 
@@ -162,6 +169,12 @@ How to read them:
 - **What Clone Digger adds** are copies whose names differ: in httpx, the methods of
   `Client` and `AsyncClient`; in Flask, the shortcuts `get`, `post`, `delete` and the
   like, each the same code with another verb.
+- **FastAPI writes its eight HTTP methods twice**, in `APIRouter` and in `FastAPI`, and
+  each one is some 380 lines, most of them a signature documented parameter by
+  parameter: `get` and `put` against `put` and `post` make one clone of 760 lines, at
+  a distance of 4. pylint sees part of it, jscpd little. In FastMCP the copies are spread out: settings
+  declared on one pattern, and twin methods such as `_get_resource` and
+  `_get_resource_template`.
 - **What it does not see** is a copy inside one statement. In rich, 30 % of the lines
   are tables of Unicode widths, one large literal per version of Unicode: pylint and
   jscpd report them, Clone Digger compares statements and does not.

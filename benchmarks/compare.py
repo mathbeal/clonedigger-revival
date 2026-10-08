@@ -106,6 +106,22 @@ PROJECTS: Final = (
         "src/click",
     ),
     Project(
+        "FastAPI",
+        "0.142.4",
+        "b8/2c/d69ce63c27bf9c5e574ab425118390102924503b4b3cdf33c07a69744dd2",
+        "fastapi-0.142.4.tar.gz",
+        "7fe2e254a0a948b88f432b02b8f627463285248233bba0998ed9640191e2ff57",
+        "fastapi",
+    ),
+    Project(
+        "FastMCP",
+        "4.0.11",
+        "e4/ca/e76fde836e6e443f49b1a16ad91fa71715ec220141261a290c9241024857",
+        "fastmcp-4.0.11.tar.gz",
+        "55fc7b8e25d4f8365818ba93f7008d1b6e646ce7fe8ae49342687243ccbef9f2",
+        "fastmcp_slim/fastmcp",
+    ),
+    Project(
         "rich",
         "15.0.0",
         "c0/8f/0722ca900cc807c13a6a0c696dacf35430f72e0ec571c4275d2371fca3e9",
