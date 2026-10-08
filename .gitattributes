@@ -1,0 +1,7 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Recorded outputs and inputs are compared byte for byte: keep LF on every system.
+* text=auto eol=lf
+*.jar binary
+*.png binary

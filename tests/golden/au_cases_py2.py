@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Runs under Python 2.7 against the ORIGINAL Clone Digger 1.1.0, to record how its
 # anti-unification behaves. The output is the reference the Python 3 port must match.
 import sys, json

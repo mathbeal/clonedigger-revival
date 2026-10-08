@@ -1,0 +1,16 @@
+The files under legacy/ are the Clone Digger 1.1.0 release, unmodified, as published
+on PyPI on 2010-02-08 (clonedigger-1.1.0.tar.gz, SHA-256
+83243929e4760ea2c2ef1e3ceb82265554351d372516db2ae1dc7f3045794124).
+
+They are distributed under the terms they were released with:
+
+- the files of Clone Digger itself: Copyright 2008 Peter Bulychev, GNU General Public
+  License version 3 or later (legacy/clonedigger/LICENSE.txt and each file's header);
+- the bundled copy of logilab-astng and logilab-common: Copyright LOGILAB S.A., GNU
+  General Public License version 2 or later, as their headers state;
+- the ANTLR 3 tool and runtime (Java archives), the grammars, and the parsers generated
+  from them for Java, JavaScript and Lua: under the terms of their own authors, as
+  those files state them where they do (for example legacy/clonedigger/js_antlr/license.txt).
+
+This notice grants and changes no right: it points to the terms each part already
+carries. See NOTICE.md.

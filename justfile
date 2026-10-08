@@ -50,9 +50,10 @@ complexity:
     uvx radon==6.0.1 cc -s -n C src
     uvx radon==6.0.1 mi -s src | sort -t'(' -k2 -n
 
-# Typos and the workflows (once there are some).
+# Typos, the workflows, and the copyright and licence of every file (REUSE).
 hygiene:
     uvx typos .
+    uvx --from 'reuse[charset-normalizer]==6.2.0' reuse lint
 
 # Mutation testing: slow; run before a release, and read what survives.
 mutate:

@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Runs under Python 2.7 against the ORIGINAL Clone Digger 1.1.0 suffix tree, to record
 # which pairs of repeated substrings it reports. Each element of a string is one
 # character, its own code; every element weighs 1, and a candidate's size is its length.

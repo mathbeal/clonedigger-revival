@@ -1,0 +1,58 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Copyright and licence of the files that cannot carry a comment, or should not: every
+# other file states them in its first lines. `just hygiene` checks that none is missing.
+version = 1
+
+# The original release, kept unmodified: its own terms, described in the LicenseRef.
+[[annotations]]
+path = "legacy/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2008 Peter Bulychev and the authors of the code it bundles"
+SPDX-License-Identifier = "LicenseRef-Clone-Digger-1.1.0"
+
+# Real files read by both versions in the tests, unmodified, with their own licence.
+[[annotations]]
+path = ["tests/golden/corpus/bottle.py", "tests/golden/corpus/LICENSE-bottle"]
+precedence = "override"
+SPDX-FileCopyrightText = "2012-2016 Marcel Hellkamp"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "tests/golden/corpus/six.py"
+precedence = "override"
+SPDX-FileCopyrightText = "2010-2020 Benjamin Peterson"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["tests/golden/corpus/docopt.py", "tests/golden/corpus/LICENSE-docopt"]
+precedence = "override"
+SPDX-FileCopyrightText = "2012-2013 Vladimir Keleshev"
+SPDX-License-Identifier = "MIT"
+
+# What the original answered, the test inputs written for this project, recorded
+# reports, Markdown, data without comments, the lockfile and the PEP 561 marker.
+[[annotations]]
+path = [
+    "tests/golden/*.json",
+    "tests/golden/*.xml",
+    "tests/golden/*.log",
+    "tests/golden/inputs/**",
+    "tests/golden/corpus/*.xml",
+    "tests/data/**",
+    "**/*.md",
+    "CITATION.cff",
+    "uv.lock",
+    "src/clonedigger/py.typed",
+    ".gitignore",
+]
+SPDX-FileCopyrightText = "2026 Mathieu Béal"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# The SARIF schema of OASIS, used to validate the SARIF report.
+[[annotations]]
+path = "tests/data/sarif-schema-2.1.0.json"
+precedence = "override"
+SPDX-FileCopyrightText = "OASIS Open"
+SPDX-License-Identifier = "LicenseRef-OASIS-IPR"
