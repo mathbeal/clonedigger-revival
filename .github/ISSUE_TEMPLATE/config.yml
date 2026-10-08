@@ -1,0 +1,8 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+blank_issues_enabled: false
+contact_links:
+  - name: Report a vulnerability privately
+    url: https://github.com/mathbeal/clonedigger-revival/security/advisories/new
+    about: Never open a public issue for a security problem.

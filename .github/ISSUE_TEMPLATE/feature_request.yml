@@ -1,0 +1,33 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Feature request
+description: Propose an option, a report format, or a kind of clone the tool should find.
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. English is preferred; French is welcome.
+        The algorithm is Peter Bulychev's: a change to what it finds is weighed against
+        the original, and documented when it differs.
+  - type: textarea
+    id: need
+    attributes:
+      label: What do you want to do?
+      description: The task, in your words.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: What happens today?
+      description: What the tool does now, on an example if you can.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing issues and the [roadmap](https://github.com/mathbeal/clonedigger-revival/blob/main/ROADMAP.md).
+          required: true

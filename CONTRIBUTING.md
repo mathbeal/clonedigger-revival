@@ -36,7 +36,13 @@ the original when it is about faithfulness.
 
 Conventional commit messages in English, signed off (`git commit -s`): the sign-off
 certifies the Developer Certificate of Origin, that you have the right to submit the
-change under this licence.
+change under this licence. A check on every pull request looks for the line.
+
+## Conduct and security
+
+Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md). A security
+problem is reported privately, as [SECURITY.md](SECURITY.md) says, never in a public
+issue.
 
 ## Measures to follow
 

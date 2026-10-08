@@ -56,3 +56,10 @@ path = "tests/data/sarif-schema-2.1.0.json"
 precedence = "override"
 SPDX-FileCopyrightText = "OASIS Open"
 SPDX-License-Identifier = "LicenseRef-OASIS-IPR"
+
+# The Contributor Covenant 2.1, with the project's contact for reports.
+[[annotations]]
+path = "CODE_OF_CONDUCT.md"
+precedence = "override"
+SPDX-FileCopyrightText = "Contributor Covenant contributors <https://www.contributor-covenant.org>"
+SPDX-License-Identifier = "CC-BY-4.0"
