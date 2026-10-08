@@ -1,0 +1,118 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: quality
+
+# On a pull request, and on main once merged.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+# A new push to a pull request makes the previous run obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  UV_FROZEN: "1"
+  # Tests read their data files as UTF-8 on every system, Windows included.
+  PYTHONUTF8: "1"
+
+jobs:
+  lint:
+    name: ruff, pylint, pydoclint, deptry, vulture, lexdrift, lockfile
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uv lock --check
+      - run: uv run ruff format --check src tests vulture_whitelist.py
+      - run: uv run ruff check src tests vulture_whitelist.py
+      - run: uv run pylint src tests
+      - run: uvx pydoclint==0.10.1 src
+      - run: uv run deptry src
+      - run: uv run vulture
+      - run: uvx lexdrift check src
+
+  types:
+    name: mypy --strict
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uv run mypy
+
+  tests:
+    name: pytest, Python ${{ matrix.python }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uv run --python ${{ matrix.python }} pytest
+
+  hygiene:
+    name: typos, licences (REUSE), workflow audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uvx typos .
+      - run: uvx --from 'reuse[charset-normalizer]==6.2.0' reuse lint
+      - run: uvx zizmor --persona=regular .github/workflows/
+
+  build:
+    name: the wheel and the sdist build and check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uv build
+      - run: uv run --no-project --with twine twine check --strict dist/*
+
+  passed:
+    name: CI passed
+    # The one check a branch rule needs: it stands for every job above.
+    if: always()
+    needs: [lint, types, tests, hygiene, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: every job succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          for result in $RESULTS; do test "$result" = success; done
