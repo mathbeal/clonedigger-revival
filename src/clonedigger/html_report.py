@@ -5,7 +5,8 @@
 """Write the clones as one HTML page: each clone side by side, its differences marked.
 
 As in Clone Digger 1.1.0, the two copies of a clone are shown statement against
-statement, and what differs between them, character by character, is highlighted.
+statement, and what differs between them is highlighted, word by word where 1.1.0
+marked characters.
 The page needs nothing else: no script, no external stylesheet, no font.
 """
 

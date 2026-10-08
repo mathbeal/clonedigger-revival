@@ -1,5 +1,14 @@
 # Clone Digger, revived for Python 3
 
+[![CI](https://github.com/mathbeal/clonedigger-revival/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/mathbeal/clonedigger-revival/actions/workflows/quality.yml)
+[![Python 3.12 | 3.13 | 3.14](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue)](pyproject.toml)
+[![Licence: GPL-3.0-or-later](https://img.shields.io/badge/licence-GPL--3.0--or--later-blue)](LICENSE)
+[![REUSE compliant](https://img.shields.io/badge/REUSE-compliant-green)](https://reuse.software)
+[![Coverage: 100 % of lines and branches](https://img.shields.io/badge/coverage-100%25%20lines%20%26%20branches-brightgreen)](justfile)
+[![Mutation testing: every mutant caught](https://img.shields.io/badge/mutants-all%20caught-brightgreen)](.github/workflows/mutation.yml)
+[![Types: mypy strict](https://img.shields.io/badge/types-mypy%20strict-blue)](https://mypy.readthedocs.io)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 **Clone Digger is the work of Peter Bulychev.** It finds duplicated code by comparing
 the shape of syntax trees and measuring their differences with *anti-unification*, an
 algorithm he designed with Marius Minea. It was written in 2008 during the Google
