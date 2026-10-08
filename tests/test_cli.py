@@ -133,7 +133,22 @@ def test_unreadable_files_are_reported(tmp_path: Path, capsys: pytest.CaptureFix
     broken = tmp_path / "broken.py"
     broken.write_text("def (:\n")
     assert main([str(broken)]) == 2
-    assert "cannot read" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert f"cannot parse {broken}" in err
+    version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    assert f"This Python ({version}) reads the syntax of Python {version} and earlier" in err
+    assert "Python 2 code is not read." in err
+
+
+def test_files_that_cannot_be_opened_are_reported(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A file that cannot be decoded is named, without the syntax hint."""
+    (tmp_path / "latin.py").write_bytes(b"name = '\xe9t\xe9'\n")
+    assert main([str(tmp_path / "latin.py")]) == 2
+    err = capsys.readouterr().err
+    assert "cannot read" in err
+    assert "reads the syntax" not in err
 
 
 def test_directories_are_walked_and_names_skipped(tmp_path: Path) -> None:

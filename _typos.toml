@@ -4,4 +4,4 @@
 [files]
 # The original release is kept as it was, spelling included; the recorded answers are
 # its output.
-extend-exclude = ["legacy/", "tests/golden/"]
+extend-exclude = ["legacy/", "tests/golden/", "tests/samples/"]

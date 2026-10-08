@@ -38,7 +38,7 @@ include = ["/src", "/tests", "/README.md", "/NOTICE.md", "/LICENSE", "/CITATION.
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-extend-exclude = ["legacy", "tests/golden"]
+extend-exclude = ["legacy", "tests/golden", "tests/samples"]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -59,7 +59,7 @@ convention = "google"
 strict = true
 python_version = "3.12"
 files = ["src", "tests"]
-exclude = ["^legacy/", "^tests/golden/"]
+exclude = ["^legacy/", "^tests/golden/", "^tests/samples/"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -94,7 +94,7 @@ enable = ["useless-suppression"]
 
 [tool.pylint.main]
 fail-on = ["useless-suppression"]
-ignore-paths = ["^legacy/.*$", "^tests/golden/.*$"]
+ignore-paths = ["^legacy/.*$", "^tests/golden/.*$", "^tests/samples/.*$"]
 
 # Code that nothing calls. Names used only from outside (the public API, dunder
 # methods) are listed in vulture_whitelist.py, each with the reason.

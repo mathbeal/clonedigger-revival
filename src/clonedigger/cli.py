@@ -82,6 +82,15 @@ REPORTS: Final[dict[str, Callable[[Sequence[Clone]], str]]] = {
 }
 
 
+def _syntax_hint() -> str:
+    version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    return (
+        f"  This Python ({version}) reads the syntax of Python {version} and earlier: code "
+        "written for a later Python must be read with that Python, and Python 2 code is "
+        "not read."
+    )
+
+
 def _prefixes(text: str) -> tuple[str, ...]:
     return tuple(prefix.strip() for prefix in text.split(",") if prefix.strip())
 
@@ -124,7 +133,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             text = path.read_text(encoding="utf-8")  # pragma: no mutate - "UTF-8" is the same
             files.append(read_source(path, text, options.func_prefixes))
-        except (OSError, SyntaxError, UnicodeDecodeError) as error:
+        except SyntaxError as error:
+            sys.stderr.write(f"clonedigger: cannot parse {path}: {error}\n{_syntax_hint()}\n")
+            unreadable = True
+        except (OSError, UnicodeDecodeError) as error:
             sys.stderr.write(f"clonedigger: cannot read {path}: {error}\n")
             unreadable = True
     settings = Settings(
