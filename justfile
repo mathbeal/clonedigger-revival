@@ -88,6 +88,19 @@ build:
     SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)" uv build
     uv run --no-project --with twine twine check --strict dist/*
 
+# Build twice, the second time with every source file touched, and fail unless the wheel
+# and the sdist are the same bit for bit.
+reproducible:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    out="$(mktemp -d)"
+    export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+    uv build -q -o "$out/first"
+    touch src/clonedigger/*.py
+    uv build -q -o "$out/second"
+    (cd "$out/first" && shasum -a 256 -- *) > "$out/first.sha256"
+    (cd "$out/second" && shasum -a 256 --check --strict ../first.sha256)
+
 # Reformat.
 fix:
     uv run ruff check --fix src tests vulture_whitelist.py

@@ -89,7 +89,7 @@ jobs:
       - run: uvx zizmor --persona=regular .github/workflows/
 
   build:
-    name: the wheel and the sdist build and check
+    name: the wheel and the sdist build, check and reproduce
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -101,6 +101,14 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
       - run: uv build
       - run: uv run --no-project --with twine twine check --strict dist/*
+      - name: the build is reproducible
+        run: |
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          uv build -q -o first
+          touch src/clonedigger/*.py
+          uv build -q -o second
+          (cd first && sha256sum -- *) > first.sha256
+          (cd second && sha256sum --check --strict ../first.sha256)
 
   passed:
     name: CI passed
