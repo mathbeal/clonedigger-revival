@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+from clonedigger import __version__
 from clonedigger.cli import main, python_files
 from clonedigger.detection import Clone, Settings
 
@@ -172,6 +173,14 @@ def test_module_entry_point(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(SystemExit) as exit_info:
         runpy.run_module("clonedigger", run_name="__main__")
     assert exit_info.value.code == 1
+
+
+def test_version_names_the_port_and_its_version(capsys: pytest.CaptureFixture[str]) -> None:
+    """--version prints the program and the installed version, as a bug report asks."""
+    with pytest.raises(SystemExit) as exit_info:
+        main(["--version"])
+    assert exit_info.value.code == 0
+    assert capsys.readouterr().out == f"clonedigger {__version__}\n"
 
 
 def test_help_is_what_the_user_reads(

@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
+from clonedigger import __version__
 from clonedigger.detection import Settings, find_clones
 from clonedigger.html_report import as_html
 from clonedigger.python_frontend import read_source
@@ -33,6 +34,7 @@ def _parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("paths", nargs="+", type=Path, help="Python files or directories")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(
         "--format",
         choices=(*REPORTS, "html"),

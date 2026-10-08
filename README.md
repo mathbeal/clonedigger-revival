@@ -70,6 +70,7 @@ command can gate a CI job.
 | `--force` | off | keep long runs of similar statements (lists of assignments), left out by default |
 | `--func-prefixes` | none | comma-separated prefixes of function names to leave out, such as `test_` |
 | `--ignore-dir` | none | a directory name to skip, repeatable |
+| `--version` | | print the version and exit |
 
 The HTML report shows each clone side by side, statement against statement, with the
 words that differ marked. The SARIF report locates each clone on its first copy, with the

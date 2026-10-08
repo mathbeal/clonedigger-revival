@@ -1,5 +1,5 @@
-usage: clonedigger [-h] [--format {text,json,sarif,html}] [--size-threshold SIZE_THRESHOLD]
-                   [--distance-threshold DISTANCE_THRESHOLD]
+usage: clonedigger [-h] [--version] [--format {text,json,sarif,html}]
+                   [--size-threshold SIZE_THRESHOLD] [--distance-threshold DISTANCE_THRESHOLD]
                    [--clustering-threshold CLUSTERING_THRESHOLD] [--hashing-depth HASHING_DEPTH]
                    [--force] [--func-prefixes FUNC_PREFIXES] [--ignore-dir IGNORE_DIR]
                    paths [paths ...]
@@ -12,6 +12,7 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+  --version             show program's version number and exit
   --format {text,json,sarif,html}
                         report format (default text); html is one page, to save and open
   --size-threshold SIZE_THRESHOLD
