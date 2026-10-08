@@ -20,6 +20,8 @@ It runs, in order: formatting and lint (ruff with every rule, pylint, pydoclint 
 complete Google docstrings, deptry), `mypy --strict`, the tests at 100 % of lines and
 branches, vulture for code that nothing calls, lexdrift for one word per idea, and the
 lockfile check. `just hygiene` looks for typos and checks the licence of every file.
+`just changelog` writes CHANGELOG.md again from the commit messages: a release tag fails
+CI unless it matches them.
 
 `uvx pre-commit install` runs the quick ones (ruff, typos, pydoclint, lexdrift, REUSE,
 zizmor) before each commit, with the same versions as CI.

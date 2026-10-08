@@ -1,8 +1,9 @@
 # Copyright 2026 Mathieu Béal
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# The original release and the files the tests read stay byte for byte as they are.
-exclude: ^(legacy/|tests/golden/|tests/data/)
+# The original release, the files the tests read and the changelog (git-cliff) stay
+# byte for byte as they are.
+exclude: ^(legacy/|tests/golden/|tests/data/|CHANGELOG\.md$)
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -21,15 +22,10 @@ repos:
   # verdicts.
   - repo: local
     hooks:
-      - id: ruff-check
-        name: ruff check (lint, imports, bandit)
-        entry: uv run ruff check --fix --force-exclude
-        language: system
-        types: [python]
-        require_serial: true
-      - id: ruff-format
-        name: ruff format
-        entry: uv run ruff format --force-exclude
+      # Through just, which keeps the virtual environment out of iCloud Drive.
+      - id: ruff
+        name: ruff check and format (lint, imports, bandit)
+        entry: just ruff-hook
         language: system
         types: [python]
         require_serial: true

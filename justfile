@@ -60,6 +60,16 @@ hygiene:
 links:
     docker run --rm -v "$PWD:/input" -w /input lycheeverse/lychee@sha256:eaff3e0a13603c9a701accfcc84f44158bb77bf36ecfa4622b626056c3463892 --config lychee.toml --no-progress README.md CONTRIBUTING.md SECURITY.md ROADMAP.md NOTICE.md CODE_OF_CONDUCT.md
 
+# Write CHANGELOG.md again from the commit history (git-cliff, cliff.toml).
+changelog:
+    uvx git-cliff -o CHANGELOG.md
+
+# For pre-commit: ruff on the files it names, from the lockfile and the venv above.
+[private]
+ruff-hook *files:
+    uv run ruff check --fix --force-exclude {{files}}
+    uv run ruff format --force-exclude {{files}}
+
 mutate:
     uv run mutmut run
     uv run mutmut results

@@ -1,0 +1,37 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: changelog
+
+# Only on a tag. A commit cannot contain its own changelog entry, so on an
+# ordinary push the file is always one commit behind and the check would force
+# an --amend on every commit. What must be true is narrower: the changelog of a
+# released version is exactly that version's history.
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  changelog:
+    name: changelog matches the history
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # git-cliff reads the whole history, not the default shallow clone.
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      # A generated changelog only stays honest if something fails when it is
+      # not what the history produces.
+      - run: uvx git-cliff -o expected.md
+      - run: diff -u CHANGELOG.md expected.md
