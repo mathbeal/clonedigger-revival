@@ -7,39 +7,122 @@ Summer of Code and last released, as version 1.1.0, in February 2010:
 <http://clonedigger.sourceforge.net>.
 
 That release runs on Python 2 only: it is built on the `compiler` module, which
-Python 3.0 removed. This repository brings the same tool to current Python. The
-goal is an update, not a new tool: same algorithm, same idea, same licence, kept
-faithful to the original and credited to its authors.
+Python 3.0 removed. This repository brings the same tool to current Python. It is an
+update, not a new tool: same algorithm, same thresholds, same licence, credited to its
+authors, and held to the answers of the original by its tests.
 
-> **Status: work in progress.** Nothing here is released yet. Until the original
-> author has been asked, this project does not use the `clonedigger` name on PyPI,
-> which remains his.
+> Not released on PyPI yet. The name `clonedigger` there belongs to the original
+> project, and is not used without its author's agreement.
 
-## What changes, and what does not
+## Why another duplicate finder
 
-- **Kept**: the anti-unification algorithm, the clustering of statements, the suffix
-  tree search for similar sequences, the thresholds and their meaning.
-- **Changed**: the Python front end moves from `compiler` to the standard `ast`
-  module; the code moves to Python 3.12 and later, typed and tested.
-- **Left out for now**: the Java, JavaScript and Lua front ends generated with ANTLR,
-  the bundled copy of `logilab-astng` and `logilab-common`, and the Eclipse plugin.
-  They remain under `legacy/`, unmodified, and in the first commit.
+Most tools compare lines or tokens: they find copies, and miss them as soon as names
+are changed. Clone Digger compares syntax trees. Two blocks that do the same work with
+other variable names, other constants or a slightly different expression have the same
+shape, and anti-unification measures how far apart they are: how many names, constants
+or subtrees one would have to change to turn one into the other.
 
-Every change to the original is in the git history. The first commit is the 1.1.0
-release, unmodified, recorded under Peter Bulychev's name; see [NOTICE.md](NOTICE.md).
+```
+$ clonedigger tests/golden/inputs
+tests/golden/inputs/prices.py:13-18  ~  tests/golden/inputs/prices.py:2-7  (distance 4)
+1 clone found.
+```
+
+Those two loops compute a total with `total`, `item` and `price` on one side, `amount`,
+`line` and `cost` on the other: a line-based tool sees nothing in common.
+
+## Install
+
+From a clone of this repository, with [uv](https://docs.astral.sh/uv/):
+
+```
+uv tool install .
+```
+
+Python 3.12 or later. The tool has no dependency.
+
+## Use
+
+```
+clonedigger PATH [PATH ...] [--format text|json|sarif|html] [options]
+```
+
+`PATH` is a Python file or a directory, searched recursively. The exit status is 0 when
+no clone is found, 1 when clones are found, 2 when a file cannot be read, so that the
+command can gate a CI job.
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--format` | `text` | `text` for a reader, `json` for a program, `sarif` for code scanning, `html` for one page to open |
+| `--size-threshold` | 5 | fewest lines a clone spans, on both sides |
+| `--distance-threshold` | 5 | largest difference between the two copies; -1 keeps every candidate |
+| `--clustering-threshold` | 10 | largest cost of gathering two statements under one pattern |
+| `--hashing-depth` | 1 | how deep statements are hashed into buckets; deeper is faster and may miss clones |
+| `--force` | off | keep long runs of similar statements (lists of assignments), left out by default |
+| `--func-prefixes` | none | comma-separated prefixes of function names to leave out, such as `test_` |
+| `--ignore-dir` | none | a directory name to skip, repeatable |
+
+The HTML report shows each clone side by side, statement against statement, with the
+words that differ marked. The SARIF report locates each clone on its first copy, with the
+second as a related location, which GitHub code scanning displays.
+
+The Python running `clonedigger` reads the syntax of its own version and earlier:
+`match`, `async`, `yield from`, `except*`, generics, f-strings and the rest are read
+(see `tests/samples/syntax_probe.py`). Code written for a later Python must be read with
+that Python; Python 2 code is not read.
 
 ## How it works
 
-1. Each file is parsed and split into sequences of statements.
-2. Statements are grouped into clusters of similar shape; each cluster keeps the
-   anti-unifier of its members, the most specific pattern they all match.
-3. Each statement is labelled with its cluster, so a file becomes a string of labels.
-4. A suffix tree finds the longest runs of labels that appear in two places.
-5. Each candidate pair is checked by anti-unification: it is reported as a clone when
-   the two sides differ by less than a threshold.
+1. Each file is parsed with `ast` and split into sequences of statements: the bodies of
+   modules, functions, classes, branches and loops.
+2. Statements of the same rough shape fall in the same bucket. In each bucket they are
+   gathered into clusters around a common pattern, the anti-unifier of their members:
+   the most specific tree they all fit, with holes where they differ.
+3. Each statement is labelled with its cluster, so a sequence becomes a string of labels.
+4. A suffix tree finds the longest runs of labels that occur in two places.
+5. Each candidate pair is anti-unified: it is a clone when the two sides differ by less
+   than the distance threshold. A clone lying inside a larger one is dropped.
 
-Because it compares trees, not lines, it finds copies where names, constants or whole
-sub-expressions were changed.
+Imports, docstrings, type annotations of signatures and type parameters are left out of
+the comparison: two functions that do the same work with other annotations are still
+clones.
+
+## Faithful, and where it differs
+
+The tests run the unmodified 1.1.0 release under Python 2.7 (Docker) and record its
+answers: anti-unification cases, suffix tree cases, and the clones it finds in three real
+files that both versions read (bottle, six, docopt). The port gives the same answers.
+
+It differs on purpose, each time with a test:
+
+- after a clone is cut out of a candidate, 1.1.0 searched the part before it minus its
+  last statement, and could lose a clone there; the whole part is searched;
+- 1.1.0 gave a statement to every cluster that improved on the best so far, which made
+  the first clusters look larger than they were; only the closest one receives it;
+- the HTML report marks differences word by word instead of character by character;
+- 1.1.0 announced that sequences over 1,000 statements were left out, and did not leave
+  them out; the port neither announces nor does it.
+
+The front ends for Java, JavaScript and Lua and the Eclipse plugin of 1.1.0 are not
+ported. The original release is kept unmodified under `legacy/`.
+
+## Speed
+
+On an Apple M4 with Python 3.14, the `json` package of the standard library takes 0.1 s,
+`email` 0.7 s, `asyncio` 1.0 s, and the whole standard library (455,000 lines, tests left
+out) 62 s, against 222 s before the clustering weighed only what it needed. `just bench`
+measures it again.
+
+## Development
+
+```
+just check     # lint, types, tests at 100 % of lines and branches, dead code, vocabulary, lockfile
+just hygiene   # typos and licences (REUSE)
+just mutate    # mutation testing: every mutant must be caught
+just golden    # record the original's answers again (needs Docker)
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [ROADMAP.md](ROADMAP.md).
 
 ## Citing
 
@@ -51,10 +134,13 @@ If you use or study this tool, please cite the original work
   on Software Engineering (SYRCoSE), 2008. doi:10.15514/SYRCOSE-2008-2-22
 - Peter Bulychev, Egor Kostylev and Vladimir Zakharov. *Anti-unification Algorithms
   and Their Applications in Program Analysis.* Perspectives of Systems Informatics,
-  Lecture Notes in Computer Science, Springer, 2010, pp. 413-423. doi:10.1007/978-3-642-11486-1_35
+  Lecture Notes in Computer Science, Springer, 2010, pp. 413-423.
+  doi:10.1007/978-3-642-11486-1_35
 
 ## Licence
 
 GNU General Public License, version 3 or (at your option) any later version, as the
-original: see [LICENSE](LICENSE). Files taken from Clone Digger keep
-their original copyright notice; files that are modified say so, with the date.
+original: see [LICENSE](LICENSE). Files taken from Clone Digger keep their original
+copyright notice; files that are modified say so, with the date. Every file states its
+copyright and licence ([REUSE](https://reuse.software)); [NOTICE.md](NOTICE.md) gives the
+provenance of each part.
