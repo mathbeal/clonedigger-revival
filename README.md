@@ -7,6 +7,7 @@
 [![Coverage: 100 % of lines and branches](https://img.shields.io/badge/coverage-100%25%20lines%20%26%20branches-brightgreen)](justfile)
 [![Mutation testing: every mutant caught](https://img.shields.io/badge/mutants-all%20caught-brightgreen)](.github/workflows/mutation.yml)
 [![Types: mypy strict](https://img.shields.io/badge/types-mypy%20strict-blue)](https://mypy.readthedocs.io)
+[![Vocabulary: lexdrift](https://img.shields.io/badge/vocabulary-lexdrift-blue)](https://github.com/mathbeal/lexdrift)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 **Clone Digger is the work of Peter Bulychev.** It finds duplicated code by comparing
@@ -218,6 +219,9 @@ just mutate    # mutation testing: every mutant must be caught
 just compare   # Clone Digger, pylint and jscpd on pinned releases (needs Node.js)
 just golden    # record the original's answers again (needs Docker)
 ```
+
+Vocabulary kept consistent by [lexdrift](https://github.com/mathbeal/lexdrift)
+([PyPI](https://pypi.org/project/lexdrift/)): one word per idea in `src`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [ROADMAP.md](ROADMAP.md).
 
