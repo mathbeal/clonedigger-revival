@@ -16,9 +16,12 @@ Each step ends with `just check` green and every mutant killed.
    takes about 20 s instead of more than four minutes. Done for comparison: pylint
    `duplicate-code` and jscpd on seven pinned releases of well-known projects, time,
    memory, pairs and share of lines (`just compare`, README).
-   To come: measure precision over every pair on a labelled sample; decide whether a
-   pair whose two copies overlap (a run of similar statements and the same run shifted)
-   should be reported, which 1.1.0 did.
+   Started for precision: `just label` shows the two copies of each pair of a JSON
+   report side by side and records the verdict, clone or not with a short reason, as
+   JSON Lines, one version of the format per record (`benchmarks/label.py`).
+   To come: the sample itself, labelled, and precision measured over every pair of it;
+   decide whether a pair whose two copies overlap (a run of similar statements and the
+   same run shifted) should be reported, which 1.1.0 did.
 6. **Done: continuous integration** (every gate, Python 3.12 to 3.14 on Linux, macOS and
    Windows, mutation weekly), REUSE licensing, the README.
 7. **Publish**, with the original author's agreement on the name: attested releases

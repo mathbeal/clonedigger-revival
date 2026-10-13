@@ -181,8 +181,10 @@ How to read them:
   jscpd report them, Clone Digger compares statements and does not.
 - **Some pairs overlap**: in a run of similar statements, a window and the same window
   shifted by two statements can be reported as a pair, as 1.1.0 did.
-- **Precision is not measured yet.** Pairs sampled by hand are real copies; a labelled
-  sample is on the [roadmap](ROADMAP.md).
+- **Precision is not measured yet.** Pairs sampled by hand are real copies. `just label`
+  shows the two copies of each reported pair side by side and writes the verdict down,
+  one JSON Lines record per pair; the labelled sample to measure precision on is still
+  to come ([roadmap](ROADMAP.md)).
 
 Run them together: they see different things.
 
@@ -217,6 +219,7 @@ just check     # lint, types, tests at 100 % of lines and branches, dead code, v
 just hygiene   # typos and licences (REUSE)
 just mutate    # mutation testing: every mutant must be caught
 just compare   # Clone Digger, pylint and jscpd on pinned releases (needs Node.js)
+just label     # judge the pairs of a JSON report, side by side, and record the verdicts
 just golden    # record the original's answers again (needs Docker)
 ```
 

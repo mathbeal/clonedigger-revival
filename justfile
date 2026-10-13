@@ -76,6 +76,13 @@ ruff-hook *files:
 compare *projects:
     uv run python benchmarks/compare.py {{projects}}
 
+# Judge the pairs of a report written by `clonedigger --format json`, each one shown side
+# by side, and add the verdicts to benchmarks/labels.jsonl: the sample precision is
+# measured on. A run stopped with `q` picks up where it left off.
+# Example: just label --report pairs.json --root ~/code/project
+label *options:
+    uv run python benchmarks/label.py {{options}}
+
 mutate:
     uv run mutmut run
     uv run mutmut results

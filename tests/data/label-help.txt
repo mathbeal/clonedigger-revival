@@ -1,0 +1,10 @@
+usage: label [-h] --report REPORT [--labels LABELS] [--root ROOT] [--width WIDTH]
+
+Judge each pair of a clonedigger JSON report and record the verdicts.
+
+options:
+  -h, --help       show this help message and exit
+  --report REPORT  a report written by --format json
+  --labels LABELS  the JSON Lines file the verdicts are added to (default benchmarks/labels.jsonl)
+  --root ROOT      the directory the paths of the report are relative to (default the current one)
+  --width WIDTH    columns each copy is given (default 60)

@@ -54,9 +54,9 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "PLR2004", "INP001"]
-# A script run on its own, not a package, that downloads pinned archives (checked by
-# their SHA-256) and runs the three tools it compares.
-"benchmarks/**" = ["INP001", "S310", "S404", "S603", "S607"]
+# Scripts run on their own: one downloads pinned archives (checked by their SHA-256) and
+# runs the three tools it compares, the other is driven by a reader at a terminal.
+"benchmarks/**" = ["S310", "S404", "S603", "S607"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -69,12 +69,15 @@ exclude = ["^legacy/", "^tests/golden/", "^tests/samples/"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# The root on the path, so that the tests import the scripts of benchmarks/ by their
+# full name, the one mutation testing knows them by.
+pythonpath = ["."]
 filterwarnings = ["error"]
 xfail_strict = true
-addopts = "--strict-markers --strict-config --cov=clonedigger --cov-branch --cov-report=term-missing --cov-fail-under=100"
+addopts = "--strict-markers --strict-config --cov=clonedigger --cov=benchmarks.label --cov-branch --cov-report=term-missing --cov-fail-under=100"
 
 [tool.coverage.run]
-source = ["src/clonedigger"]
+source = ["src/clonedigger", "benchmarks/label.py"]
 
 [dependency-groups]
 dev = [
@@ -115,7 +118,7 @@ known_first_party = ["clonedigger"]
 # Mutation testing: change the code a little, one way at a time, and check that some
 # test fails. A mutant that survives is a behaviour no test pins down.
 [tool.mutmut]
-source_paths = ["src/clonedigger/"]
+source_paths = ["src/clonedigger/", "benchmarks/label.py"]
 do_not_mutate = ["src/clonedigger/__init__.py"]
 also_copy = ["tests/golden/"]
 pytest_add_cli_args = ["--no-cov", "-p", "no:cacheprovider"]
