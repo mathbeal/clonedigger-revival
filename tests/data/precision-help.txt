@@ -1,0 +1,8 @@
+usage: precision [-h] [--sample SAMPLE] [--labels LABELS]
+
+Measure precision on the labelled sample, with its Wilson interval.
+
+options:
+  -h, --help       show this help message and exit
+  --sample SAMPLE  the pairs drawn, as a report of pairs (default benchmarks/sample.json)
+  --labels LABELS  the verdicts given on them, as JSON Lines (default benchmarks/labels.jsonl)

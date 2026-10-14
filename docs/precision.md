@@ -86,12 +86,66 @@ be argued with, pair by pair.
 
 ## The figure
 
-    just precision
+**Precision is 93.3 %, 56 of the 60 pairs, and the 95 % Wilson interval runs from
+84.0 % to 97.4 %.** The whole of what `just precision` prints:
+
+```
+                                  pairs duplicated code  precision  95 % Wilson
+Django-6.1.2                         30              27     90.0 %  [74.3 %, 96.6 %]
+httpx-0.28.1                         30              29     96.6 %  [83.3 %, 99.5 %]
+the whole sample                     60              56     93.3 %  [84.0 %, 97.4 %]
+their copies overlap                  9               9    100.0 %  [70.0 %, 100.0 %]
+the sample without them              51              47     92.1 %  [81.5 %, 97.0 %]
+```
 
 Every share is rounded away from the tool's advantage: precision and the lower bound
-down, the upper bound up. The exact count stands next to each one.
+down, the upper bound up. The exact count stands next to each one, so 29 of 30 reads
+96.6 % and not 96.7 %.
 
-<!-- The table below is the output of `just precision`. -->
+The interval is what a sample of 60 can say, and it is wide: the figure to quote is
+"93.3 %, 56 of 60, between 84 % and 97 %", not "93 %". A tighter interval needs more
+pairs judged, not a better tool.
+
+### What the figure is made of
+
+Each verdict in [benchmarks/labels.jsonl](../benchmarks/labels.jsonl) names the criterion
+that decided it, so this count can be made again from the file:
+
+| Criterion | Pairs |
+|---|--:|
+| 1, the same work, other names, constants or strings | 17 |
+| 2, the same code with one part changed | 1 |
+| 3, written out for two sibling things | 12 |
+| 4, a family written on one pattern | 26 |
+| 6, only the frame around the work in common (**not** duplicated code) | 4 |
+
+Three things to hold next to the figure:
+
+- **The criterion that carries it is the fourth**, families written on one pattern: 26 of
+  the 56. Sixteen of those are Django locale tables, `conf/locale/*/formats.py`, where
+  the same settings are declared in the same order with another language's values. A
+  reader who refuses criterion 4 would read a very different figure, and the file says
+  which pairs to take out.
+- **httpx is a library of twins.** Its `Client` and `AsyncClient`, and its eight HTTP
+  verbs, are written out in full side by side, which is why 29 of its 30 pairs are
+  duplicated code and why 19.8 % of its lines lie in a copy (README). Its 96.6 % is a
+  fact about httpx, not a general rate.
+- **This measures that a reported pair really is duplicated code**, which is what the
+  tool claims. It does not measure whether the pair is worth acting on: nobody is going
+  to deduplicate a hundred locale files, and the question asked of each pair says so.
+
+### What the sample taught
+
+*Written after the sixty pairs were judged, as a note on the criteria above, not a change
+to them.* The hard cases were all the same shape: a single call to an API of the project,
+with every one of its arguments different. Three of the four pairs refused are that, two
+of them `errors.append(checks.Error("...", obj=..., id="..."))` in unrelated modules of
+Django, one an `add_argument` of two different command-line options. Criterion 1 asks
+whether the two copies "do the same work", and reporting one problem is not the same work
+as reporting another one: what they share is the shape of the call, which is criterion 6.
+Where the duplication is in the statements themselves, and not only in the arguments of
+one call, criterion 1 applies: Django checks two mutually exclusive arguments the same
+way in `constraints.py` and in `migrations/operations/models.py`, and that pair counts.
 
 ## Drawing it again
 

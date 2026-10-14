@@ -59,7 +59,7 @@ hygiene:
 # Mutation testing: slow; run before a release, and read what survives.
 # Check that every link of the Markdown files leads somewhere (needs Docker).
 links:
-    docker run --rm -v "$PWD:/input" -w /input lycheeverse/lychee@sha256:eaff3e0a13603c9a701accfcc84f44158bb77bf36ecfa4622b626056c3463892 --config lychee.toml --no-progress README.md CONTRIBUTING.md SECURITY.md ROADMAP.md NOTICE.md CODE_OF_CONDUCT.md
+    docker run --rm -v "$PWD:/input" -w /input lycheeverse/lychee@sha256:eaff3e0a13603c9a701accfcc84f44158bb77bf36ecfa4622b626056c3463892 --config lychee.toml --no-progress README.md CONTRIBUTING.md SECURITY.md ROADMAP.md NOTICE.md CODE_OF_CONDUCT.md docs/precision.md
 
 # Write CHANGELOG.md again from the commit history (git-cliff, cliff.toml).
 changelog:
@@ -82,6 +82,18 @@ compare *projects:
 # Example: just label --report pairs.json --root ~/code/project
 label *options:
     uv run python benchmarks/label.py {{options}}
+
+# Draw again the sample of pairs that precision is measured on: the detection run on two
+# of the projects above, and the same number of their pairs drawn with a fixed seed
+# (docs/precision.md). It writes benchmarks/sample.json, which must come out unchanged.
+sample:
+    uv run python -m benchmarks.sample
+
+# Precision: the share of the pairs drawn that a reader judged duplicated code, with its
+# Wilson 95 % interval, from the two files committed, benchmarks/sample.json and
+# benchmarks/labels.jsonl. The figures of docs/precision.md and of the README.
+precision:
+    uv run python -m benchmarks.precision
 
 mutate:
     uv run mutmut run
