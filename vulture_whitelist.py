@@ -3,10 +3,7 @@
 
 """Names vulture cannot see used, each with the reason it stays."""
 
-from clonedigger import AntiUnification, Cluster, Node
+from clonedigger import AntiUnification
 
-# Public API: what a caller reads from an anti-unification, a cluster and a node.
+# Public API: what a caller reads from an anti-unification.
 _ = AntiUnification.variables
-_ = AntiUnification.distance
-_ = Cluster.max_covered_lines
-_ = Node.covered_lines
