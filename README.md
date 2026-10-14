@@ -180,11 +180,18 @@ How to read them:
   are tables of Unicode widths, one large literal per version of Unicode: pylint and
   jscpd report them, Clone Digger compares statements and does not.
 - **Some pairs overlap**: in a run of similar statements, a window and the same window
-  shifted by two statements can be reported as a pair, as 1.1.0 did.
-- **Precision is not measured yet.** Pairs sampled by hand are real copies. `just label`
-  shows the two copies of each reported pair side by side and writes the verdict down,
-  one JSON Lines record per pair; the labelled sample to measure precision on is still
-  to come ([roadmap](ROADMAP.md)).
+  shifted by two statements can be reported as a pair, as 1.1.0 did. Nine of the sixty
+  pairs of the labelled sample below are of that kind.
+- **Precision is 93.3 %**, 56 of 60 pairs, with a 95 % Wilson interval from 84.0 % to
+  97.4 %: thirty pairs drawn at random from httpx 0.28.1 and thirty from Django 6.1.2,
+  the two projects counting equally however many pairs each reports, and each pair judged
+  by hand against criteria written down before the pairs were read. By project: httpx
+  96.6 % (29 of 30), Django 90.0 % (27 of 30). What counts as duplicated
+  code, the pairs drawn, the verdict and the reason for each one, and what the figure
+  does not say, are in [docs/precision.md](docs/precision.md); `just precision` prints it
+  again from the two files committed. It measures that a reported pair really is
+  duplicated code, not that it is worth acting on: 26 of the 56 are families written on
+  one pattern, 16 of them Django locale tables.
 
 Run them together: they see different things.
 
@@ -220,6 +227,8 @@ just hygiene   # typos and licences (REUSE)
 just mutate    # mutation testing: every mutant must be caught
 just compare   # Clone Digger, pylint and jscpd on pinned releases (needs Node.js)
 just label     # judge the pairs of a JSON report, side by side, and record the verdicts
+just sample    # draw the sample of pairs precision is measured on, with its fixed seed
+just precision # precision on that sample, with its Wilson 95 % interval
 just golden    # record the original's answers again (needs Docker)
 ```
 

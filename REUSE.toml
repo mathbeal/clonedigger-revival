@@ -45,6 +45,8 @@ path = [
     "CITATION.cff",
     "renovate.json",
     "benchmarks/results.json",
+    "benchmarks/sample.json",
+    "benchmarks/labels.jsonl",
     "uv.lock",
     "src/clonedigger/py.typed",
     ".gitignore",

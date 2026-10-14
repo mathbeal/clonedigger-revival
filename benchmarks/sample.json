@@ -1,0 +1,722 @@
+[
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 914,
+      "end": 918
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 868,
+      "end": 872
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 1022,
+      "end": 1026
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 901,
+      "end": 905
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 272,
+      "end": 285
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 253,
+      "end": 259
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1570,
+      "end": 1581
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 812,
+      "end": 823
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 677,
+      "end": 683
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_transports/default.py",
+      "start": 332,
+      "end": 338
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 635,
+      "end": 639
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 578,
+      "end": 589
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_exceptions.py",
+      "start": 340,
+      "end": 363
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_exceptions.py",
+      "start": 309,
+      "end": 337
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 216,
+      "end": 229
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 205,
+      "end": 214
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1983,
+      "end": 1988
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 2000,
+      "end": 2005
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1376,
+      "end": 1430
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 662,
+      "end": 716
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 329,
+      "end": 338
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 272,
+      "end": 285
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 635,
+      "end": 639
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 462,
+      "end": 466
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_api.py",
+      "start": 364,
+      "end": 401
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_api.py",
+      "start": 282,
+      "end": 319
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1991,
+      "end": 2000
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1276,
+      "end": 1285
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_exceptions.py",
+      "start": 280,
+      "end": 306
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_exceptions.py",
+      "start": 271,
+      "end": 288
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_api.py",
+      "start": 210,
+      "end": 278
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_api.py",
+      "start": 174,
+      "end": 242
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_transports/default.py",
+      "start": 300,
+      "end": 310
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_transports/default.py",
+      "start": 156,
+      "end": 166
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1570,
+      "end": 1581
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1527,
+      "end": 1538
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1432,
+      "end": 1483
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 718,
+      "end": 769
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1686,
+      "end": 1692
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 971,
+      "end": 977
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 1043,
+      "end": 1052
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 939,
+      "end": 948
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_api.py",
+      "start": 426,
+      "end": 437
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_api.py",
+      "start": 267,
+      "end": 278
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 738,
+      "end": 769
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 724,
+      "end": 755
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1160,
+      "end": 1231
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1123,
+      "end": 1194
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_api.py",
+      "start": 246,
+      "end": 278
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_api.py",
+      "start": 174,
+      "end": 206
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_exceptions.py",
+      "start": 353,
+      "end": 363
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_exceptions.py",
+      "start": 340,
+      "end": 350
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_exceptions.py",
+      "start": 327,
+      "end": 350
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_exceptions.py",
+      "start": 309,
+      "end": 337
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1780,
+      "end": 1835
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_client.py",
+      "start": 1751,
+      "end": 1806
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 731,
+      "end": 762
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 724,
+      "end": 755
+    }
+  },
+  {
+    "first": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 750,
+      "end": 769
+    },
+    "second": {
+      "path": "httpx-0.28.1/httpx-0.28.1/httpx/_models.py",
+      "start": 724,
+      "end": 748
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/ka/formats.py",
+      "start": 7,
+      "end": 12
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/it/formats.py",
+      "start": 7,
+      "end": 12
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/models/fields/related.py",
+      "start": 1562,
+      "end": 1566
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/contrib/postgres/fields/array.py",
+      "start": 65,
+      "end": 69
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/es_CO/formats.py",
+      "start": 9,
+      "end": 14
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/nb/formats.py",
+      "start": 11,
+      "end": 20
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/tk/formats.py",
+      "start": 5,
+      "end": 9
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/ca/formats.py",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/id/formats.py",
+      "start": 8,
+      "end": 12
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/hr/formats.py",
+      "start": 8,
+      "end": 12
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/models/constraints.py",
+      "start": 285,
+      "end": 292
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/migrations/operations/models.py",
+      "start": 1002,
+      "end": 1009
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/backends/base/schema.py",
+      "start": 1877,
+      "end": 1884
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/backends/base/schema.py",
+      "start": 1929,
+      "end": 1936
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/migrations/migration.py",
+      "start": 181,
+      "end": 197
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/migrations/migration.py",
+      "start": 120,
+      "end": 136
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/contrib/sites/models.py",
+      "start": 90,
+      "end": 94
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/contrib/flatpages/models.py",
+      "start": 31,
+      "end": 35
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/ru/formats.py",
+      "start": 5,
+      "end": 9
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/vi/formats.py",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/fr_CH/formats.py",
+      "start": 5,
+      "end": 11
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/fr_CA/formats.py",
+      "start": 5,
+      "end": 11
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/models/base.py",
+      "start": 2120,
+      "end": 2125
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/contrib/auth/checks.py",
+      "start": 111,
+      "end": 117
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/el/formats.py",
+      "start": 6,
+      "end": 12
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/es_AR/formats.py",
+      "start": 6,
+      "end": 12
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/core/checks/messages.py",
+      "start": 65,
+      "end": 72
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/core/checks/messages.py",
+      "start": 60,
+      "end": 67
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/core/management/commands/sqlmigrate.py",
+      "start": 19,
+      "end": 24
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/contrib/contenttypes/management/commands/remove_stale_contenttypes.py",
+      "start": 21,
+      "end": 25
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/test/client.py",
+      "start": 622,
+      "end": 630
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/test/client.py",
+      "start": 550,
+      "end": 558
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/az/formats.py",
+      "start": 5,
+      "end": 9
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/he/formats.py",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/core/validators.py",
+      "start": 490,
+      "end": 503
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/core/validators.py",
+      "start": 472,
+      "end": 485
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/tr/formats.py",
+      "start": 11,
+      "end": 19
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/lv/formats.py",
+      "start": 11,
+      "end": 20
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/sr/formats.py",
+      "start": 5,
+      "end": 9
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/pt_BR/formats.py",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/models/sql/where.py",
+      "start": 256,
+      "end": 264
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/models/sql/where.py",
+      "start": 246,
+      "end": 254
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/hr/formats.py",
+      "start": 5,
+      "end": 9
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/zh_Hans/formats.py",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/contrib/admin/helpers.py",
+      "start": 80,
+      "end": 90
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/contrib/admin/helpers.py",
+      "start": 76,
+      "end": 86
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/en/formats.py",
+      "start": 7,
+      "end": 15
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/nb/formats.py",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/de_CH/formats.py",
+      "start": 5,
+      "end": 10
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/ar_DZ/formats.py",
+      "start": 5,
+      "end": 10
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/el/formats.py",
+      "start": 5,
+      "end": 9
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/fi/formats.py",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/models/fields/__init__.py",
+      "start": 2463,
+      "end": 2467
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/db/models/fields/__init__.py",
+      "start": 1731,
+      "end": 1735
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/cs/formats.py",
+      "start": 5,
+      "end": 9
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/ar_DZ/formats.py",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/contrib/staticfiles/management/commands/collectstatic.py",
+      "start": 49,
+      "end": 53
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/test/runner.py",
+      "start": 851,
+      "end": 855
+    }
+  },
+  {
+    "first": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/sk/formats.py",
+      "start": 7,
+      "end": 12
+    },
+    "second": {
+      "path": "Django-6.1.2/django-6.1.2/django/conf/locale/sr/formats.py",
+      "start": 7,
+      "end": 12
+    }
+  }
+]
