@@ -414,6 +414,24 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def report(sample: Sequence[Pair], given: dict[Pair, Label]) -> str:
+    """Write the whole of what the tool prints.
+
+    Args:
+        sample: The pairs drawn.
+        given: The verdict of each of them.
+
+    Returns:
+        The table of the measures, then the count by criterion, then the reasons given to
+        more than one pair, each under its heading.
+    """
+    return (
+        f"{table(measures(sample, given))}\n"
+        f"\n{BY_CRITERION}\n{criteria(sample, given)}\n"
+        f"\n{RECURRING}\n{families(sample, given)}\n"
+    )
+
+
 def main(argv: Sequence[str], writer: TextIO) -> None:
     """Read the sample and its verdicts, and print the measures and the counts.
 
@@ -424,9 +442,9 @@ def main(argv: Sequence[str], writer: TextIO) -> None:
     options = _parser().parse_args(argv)
     sample = read_pairs(options.sample)
     given = verdicts(sample, read_labels(options.labels))
-    writer.write(table(measures(sample, given)) + "\n")
-    writer.write(f"\n{BY_CRITERION}\n{criteria(sample, given)}\n")
-    writer.write(f"\n{RECURRING}\n{families(sample, given)}\n")
+    # The whole report is built before a line of it is written: a sample whose verdicts
+    # the counts refuse is not printed by halves, the table standing and the counts gone.
+    writer.write(report(sample, given))
 
 
 if __name__ == "__main__":

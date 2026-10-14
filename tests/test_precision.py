@@ -418,6 +418,20 @@ def test_the_table_is_printed_for_the_files_given(tmp_path: Path) -> None:
     ]
 
 
+def test_a_sample_the_counts_refuse_is_not_printed_by_halves(tmp_path: Path) -> None:
+    """A criterion that decided both ways stops the tool with nothing written at all."""
+    sample = sample_of(tmp_path, (FIRST, SECOND), (SECOND, FIRST))
+    judged = labels_of(
+        tmp_path,
+        CLONE,
+        Label(SECOND, FIRST, clone=False, reason="1: not after all"),
+    )
+    shown = io.StringIO()
+    with pytest.raises(ValueError, match=r"^criterion 1 decided both ways, "):
+        main(["--sample", str(sample), "--labels", str(judged)], shown)
+    assert not shown.getvalue()
+
+
 def test_help_is_what_the_user_reads(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

@@ -125,8 +125,10 @@ The two counts under the table are read from
 [benchmarks/labels.jsonl](../benchmarks/labels.jsonl), which is why every reason recorded
 there begins with the number of the criterion that decided the verdict: no count of this
 page is written by hand. A criterion that decided one pair one way and another the other
-way would mean a verdict recorded under the wrong number, and `just precision` refuses to
-print at all rather than add the two up.
+way would mean a verdict recorded under the wrong number: `just precision` then stops on
+that message and prints nothing at all, neither the table nor the counts, rather than
+adding the two up. The whole report is built before a line of it is written, which is
+what makes that so.
 
 ### What the figure is made of
 
