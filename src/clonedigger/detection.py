@@ -209,7 +209,7 @@ def mark_statements(statements: Sequence[Statement], clusters: Sequence[Cluster]
     # The cluster each statement was gathered into: likely the closest, so weighing it
     # first gives a tight limit for all the others.
     # Like the limits below, it only saves time: the closest cluster is the same without.
-    home = _homes(clusters)  # pragma: no mutate
+    home = _homes(clusters)
     for statement in statements:
         # The cluster whose pattern the statement is closest to, the first on a tie.
         # Clone Digger 1.1.0 also added the statement to every cluster that improved on
@@ -447,7 +447,7 @@ def _longest_window(
         return None
     start, end = best
     one, other = first[start:end], second[start:end]
-    distance = _sequence_distance(one, other, settings.distance_threshold)  # pragma: no mutate
+    distance = _sequence_distance(one, other, settings.distance_threshold)
     return start, end, Clone(one, other, distance)
 
 
