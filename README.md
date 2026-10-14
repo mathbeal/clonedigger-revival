@@ -184,8 +184,9 @@ How to read them:
   pairs of the labelled sample below are of that kind.
 - **Precision is 93.3 %**, 56 of 60 pairs, with a 95 % Wilson interval from 84.0 % to
   97.4 %: thirty pairs drawn at random from httpx 0.28.1 and thirty from Django 6.1.2,
-  each judged by hand against criteria written down before the pairs were read. By
-  project: httpx 96.6 % (29 of 30), Django 90.0 % (27 of 30). What counts as duplicated
+  the two projects counting equally however many pairs each reports, and each pair judged
+  by hand against criteria written down before the pairs were read. By project: httpx
+  96.6 % (29 of 30), Django 90.0 % (27 of 30). What counts as duplicated
   code, the pairs drawn, the verdict and the reason for each one, and what the figure
   does not say, are in [docs/precision.md](docs/precision.md); `just precision` prints it
   again from the two files committed. It measures that a reported pair really is

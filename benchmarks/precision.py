@@ -12,6 +12,11 @@ its Wilson 95 % interval, and every share is rounded away from the tool's advant
 precision and the lower bound down, the upper bound up. The exact count is printed next
 to it, so nothing is hidden by the rounding.
 
+Under the table come the counts that say what the figure is made of: how many pairs each
+criterion of docs/precision.md decided, and which reasons were given to more than one
+pair. Both are read from the verdicts, which is why a reason begins with the number of
+the criterion that decided it.
+
 The pairs drawn are in benchmarks/sample.json, the verdicts in benchmarks/labels.jsonl,
 both committed: this reads those two files only, with no network and no Docker.
 
@@ -23,8 +28,10 @@ from __future__ import annotations
 import argparse
 import math
 import random
+import re
 import statistics
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING, Final
@@ -49,6 +56,13 @@ DEFAULT_LABELS: Final = "benchmarks/labels.jsonl"
 # The headings of the table, and the columns the first one is given.
 HEADINGS: Final = ("pairs", "duplicated code", "precision", "95 % Wilson")
 NAME_WIDTH: Final = 34
+# What the two counts under the table are called.
+BY_CRITERION: Final = "the criterion each verdict was decided on:"
+RECURRING: Final = "the reasons given to more than one pair:"
+# The number of the criterion a reason begins with, as `just label` records it.
+NUMBERED: Final = re.compile(r"^(\d+): ")
+# A reason given to fewer pairs than this is a pair of its own, not a family.
+TWICE: Final = 2
 
 
 def _place(pair: Pair) -> tuple[str, int, int, str, int, int]:
@@ -212,7 +226,31 @@ def overlapping(pair: Pair) -> bool:
     return first.path == second.path and first.start <= second.end and second.start <= first.end
 
 
-def verdicts(sample: Sequence[Pair], labels: Iterable[Label]) -> dict[Pair, bool]:
+def criterion(label: Label) -> int:
+    """Read the criterion a verdict was decided on.
+
+    Args:
+        label: The verdict. Its reason begins with the number of the criterion of
+            docs/precision.md that decided it, then a colon: that is what lets the
+            counts by criterion be made again from the file.
+
+    Returns:
+        That number.
+
+    Raises:
+        ValueError: The reason does not begin with a criterion number and a colon.
+    """
+    found = NUMBERED.match(label.reason)
+    if found is None:
+        msg = (
+            f"{label.first} ~ {label.second}: the reason must begin with the number of "
+            f'the criterion that decided it, as in "4: locale table", not "{label.reason}"'
+        )
+        raise ValueError(msg)
+    return int(found[1])
+
+
+def verdicts(sample: Sequence[Pair], labels: Iterable[Label]) -> dict[Pair, Label]:
     """Match the verdicts recorded to the pairs drawn.
 
     Args:
@@ -220,20 +258,20 @@ def verdicts(sample: Sequence[Pair], labels: Iterable[Label]) -> dict[Pair, bool
         labels: Every verdict recorded, of this sample or of another report.
 
     Returns:
-        The verdict of each pair of the sample, true when it is duplicated code.
+        The verdict of each pair of the sample.
 
     Raises:
         ValueError: A pair of the sample was judged twice, or not judged at all.
     """
     wanted = set(sample)
-    given: dict[Pair, bool] = {}
+    given: dict[Pair, Label] = {}
     for label in labels:
         if label.pair not in wanted:
             continue
         if label.pair in given:
             msg = f"{label.first} ~ {label.second}: judged twice"
             raise ValueError(msg)
-        given[label.pair] = label.clone
+        given[label.pair] = label
     left = [pair for pair in sample if pair not in given]
     if left:
         first, second = left[0]
@@ -242,7 +280,7 @@ def verdicts(sample: Sequence[Pair], labels: Iterable[Label]) -> dict[Pair, bool
     return given
 
 
-def _over(name: str, pairs: Iterable[Pair], given: dict[Pair, bool]) -> Measure:
+def _over(name: str, pairs: Iterable[Pair], given: dict[Pair, Label]) -> Measure:
     """Measure precision over some of the pairs drawn.
 
     Args:
@@ -254,10 +292,10 @@ def _over(name: str, pairs: Iterable[Pair], given: dict[Pair, bool]) -> Measure:
         The measure over them.
     """
     chosen = list(pairs)
-    return Measure(name, len(chosen), sum(1 for pair in chosen if given[pair]))
+    return Measure(name, len(chosen), sum(1 for pair in chosen if given[pair].clone))
 
 
-def measures(sample: Sequence[Pair], given: dict[Pair, bool]) -> list[Measure]:
+def measures(sample: Sequence[Pair], given: dict[Pair, Label]) -> list[Measure]:
     """Measure precision over the whole sample and over the parts worth reading apart.
 
     Args:
@@ -301,6 +339,56 @@ def table(parts: Sequence[Measure]) -> str:
     return "\n".join([headings, *(part.row() for part in parts)])
 
 
+def criteria(sample: Sequence[Pair], given: dict[Pair, Label]) -> str:
+    """Count the pairs drawn by the criterion their verdict was decided on.
+
+    Args:
+        sample: The pairs drawn.
+        given: The verdict of each of them.
+
+    Returns:
+        One line per criterion met: its number, how many pairs it decided, and whether
+        it counts them as duplicated code.
+
+    Raises:
+        ValueError: One criterion decided both ways, which means a verdict was recorded
+            under the wrong number.
+    """
+    lines = []
+    for number in sorted({criterion(given[pair]) for pair in sample}):
+        decided = [pair for pair in sample if criterion(given[pair]) == number]
+        clones = sum(1 for pair in decided if given[pair].clone)
+        if clones not in {0, len(decided)}:
+            msg = (
+                f"criterion {number} decided both ways, {clones} of {len(decided)} pairs "
+                f"duplicated code: a verdict is recorded under the wrong number"
+            )
+            raise ValueError(msg)
+        what = "duplicated code" if clones else "not duplicated code"
+        lines.append(f"{f'criterion {number}':<{NAME_WIDTH}}{len(decided):>5}  {what}")
+    return "\n".join(lines)
+
+
+def families(sample: Sequence[Pair], given: dict[Pair, Label]) -> str:
+    """Count the reasons given to more than one pair.
+
+    One reason given over and over is a family of copies the sample met again and again,
+    and says what the figure is made of.
+
+    Args:
+        sample: The pairs drawn.
+        given: The verdict of each of them.
+
+    Returns:
+        One line per reason given to at least `TWICE` pairs, the commonest first: how
+        many pairs, then the reason as it was recorded.
+    """
+    counted = Counter(given[pair].reason for pair in sample)
+    return "\n".join(
+        f"{count:>5}  {reason}" for reason, count in counted.most_common() if count >= TWICE
+    )
+
+
 def _parser() -> argparse.ArgumentParser:
     """Describe the command line: the pairs drawn and the verdicts given on them.
 
@@ -327,15 +415,18 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str], writer: TextIO) -> None:
-    """Read the sample and its verdicts, and print the table of the measures.
+    """Read the sample and its verdicts, and print the measures and the counts.
 
     Args:
         argv: The arguments, without the program name.
-        writer: Where the table is written.
+        writer: Where they are written.
     """
     options = _parser().parse_args(argv)
     sample = read_pairs(options.sample)
-    writer.write(table(measures(sample, verdicts(sample, read_labels(options.labels)))) + "\n")
+    given = verdicts(sample, read_labels(options.labels))
+    writer.write(table(measures(sample, given)) + "\n")
+    writer.write(f"\n{BY_CRITERION}\n{criteria(sample, given)}\n")
+    writer.write(f"\n{RECURRING}\n{families(sample, given)}\n")
 
 
 if __name__ == "__main__":

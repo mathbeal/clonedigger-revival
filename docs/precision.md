@@ -96,6 +96,21 @@ httpx-0.28.1                         30              29     96.6 %  [83.3 %, 99.
 the whole sample                     60              56     93.3 %  [84.0 %, 97.4 %]
 their copies overlap                  9               9    100.0 %  [70.0 %, 100.0 %]
 the sample without them              51              47     92.1 %  [81.5 %, 97.0 %]
+
+the criterion each verdict was decided on:
+criterion 1                          17  duplicated code
+criterion 2                           1  duplicated code
+criterion 3                          12  duplicated code
+criterion 4                          26  duplicated code
+criterion 6                           4  not duplicated code
+
+the reasons given to more than one pair:
+   16  4: locale table, same settings other values
+    4  4: family of exception classes on one pattern
+    3  4: family of one-line status properties
+    2  3: property and setter of two attributes of one class
+    2  3: two verb methods each, the verb changed
+    2  6: a checks message appended, every argument other than obj
 ```
 
 Every share is rounded away from the tool's advantage: precision and the lower bound
@@ -106,18 +121,14 @@ The interval is what a sample of 60 can say, and it is wide: the figure to quote
 "93.3 %, 56 of 60, between 84 % and 97 %", not "93 %". A tighter interval needs more
 pairs judged, not a better tool.
 
+The two counts under the table are read from
+[benchmarks/labels.jsonl](../benchmarks/labels.jsonl), which is why every reason recorded
+there begins with the number of the criterion that decided the verdict: no count of this
+page is written by hand. A criterion that decided one pair one way and another the other
+way would mean a verdict recorded under the wrong number, and `just precision` refuses to
+print at all rather than add the two up.
+
 ### What the figure is made of
-
-Each verdict in [benchmarks/labels.jsonl](../benchmarks/labels.jsonl) names the criterion
-that decided it, so this count can be made again from the file:
-
-| Criterion | Pairs |
-|---|--:|
-| 1, the same work, other names, constants or strings | 17 |
-| 2, the same code with one part changed | 1 |
-| 3, written out for two sibling things | 12 |
-| 4, a family written on one pattern | 26 |
-| 6, only the frame around the work in common (**not** duplicated code) | 4 |
 
 Three things to hold next to the figure:
 
@@ -137,15 +148,30 @@ Three things to hold next to the figure:
 ### What the sample taught
 
 *Written after the sixty pairs were judged, as a note on the criteria above, not a change
-to them.* The hard cases were all the same shape: a single call to an API of the project,
-with every one of its arguments different. Three of the four pairs refused are that, two
-of them `errors.append(checks.Error("...", obj=..., id="..."))` in unrelated modules of
-Django, one an `add_argument` of two different command-line options. Criterion 1 asks
-whether the two copies "do the same work", and reporting one problem is not the same work
-as reporting another one: what they share is the shape of the call, which is criterion 6.
-Where the duplication is in the statements themselves, and not only in the arguments of
-one call, criterion 1 applies: Django checks two mutually exclusive arguments the same
-way in `constraints.py` and in `migrations/operations/models.py`, and that pair counts.
+to them.* The hard cases were all the same shape: one call that says something through an
+API of the project, where what the call says differs on every line and only the plumbing
+is shared. Three of the four pairs refused are that:
+
+- `warnings.append(checks.Warning("null has no effect on ManyToManyField.", obj=self,
+  id="fields.W340"))` in `db/models/fields/related.py` against
+  `errors.append(checks.Error("Base field for array cannot be a related field.",
+  obj=self, id="postgres.E002"))` in `contrib/postgres/fields/array.py`: another list,
+  another class of message, another text, another id, and `obj=self` in common;
+- `errors.append(checks.Error("The model name ... double underscores ...", obj=cls,
+  id="models.E024"))` in `db/models/base.py` against the same call with
+  `checks.Critical` and `id="auth.C010"` in `contrib/auth/checks.py`: `obj=cls` in
+  common;
+- `parser.add_argument("--no-post-process", ...)` in `collectstatic.py` against
+  `parser.add_argument("--no-faulthandler", ...)` in `test/runner.py`: two different
+  options, sharing `action="store_false"` and nothing that names them.
+
+Criterion 1 asks whether the two copies "do the same work", and reporting one problem is
+not the same work as reporting another one: what they share is the shape of the call,
+which is criterion 6. Where the duplication is in the statements themselves, and not only
+in the arguments of one call, criterion 1 applies: Django rejects two mutually exclusive
+arguments with the same pair of guards in `db/models/constraints.py` and in
+`db/migrations/operations/models.py`, and that pair counts. The fourth pair refused is
+criterion 6 as well, two different calls in httpx sharing two of their keyword arguments.
 
 ## Drawing it again
 

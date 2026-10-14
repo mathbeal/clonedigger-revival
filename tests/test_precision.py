@@ -22,8 +22,11 @@ from benchmarks.label import Label
 from benchmarks.precision import (
     CONFIDENCE,
     Measure,
+    criteria,
+    criterion,
     down,
     draw,
+    families,
     main,
     measures,
     overlapping,
@@ -44,6 +47,9 @@ THIRD = Span("two-2.0/c.py", 1, 5)
 FOURTH = Span("two-2.0/c.py", 4, 8)
 # The multiple of the standard error a 95 % interval reaches, 1.96 to two decimals.
 SPREAD = statistics.NormalDist().inv_cdf((1 + CONFIDENCE) / 2)
+# Two verdicts as `just label` records them: the reason begins with its criterion.
+CLONE = Label(FIRST, SECOND, clone=True, reason="1: same loop")
+NOT_A_CLONE = Label(THIRD, FOURTH, clone=False, reason="6: only the shape")
 
 
 def population(count: int) -> list[tuple[Span, Span]]:
@@ -226,39 +232,30 @@ def test_two_copies_that_share_no_line_do_not_overlap(first: Span, second: Span)
 
 
 def test_the_verdict_of_each_pair_drawn_is_read() -> None:
-    """Every pair of the sample gets the verdict recorded for it."""
-    judged = [
-        Label(FIRST, SECOND, clone=True, reason="same loop"),
-        Label(THIRD, FOURTH, clone=False, reason="only the shape"),
-    ]
+    """Every pair of the sample gets the verdict recorded for it, with its reason."""
+    judged = [CLONE, NOT_A_CLONE]
     assert verdicts([(FIRST, SECOND), (THIRD, FOURTH)], judged) == {
-        (FIRST, SECOND): True,
-        (THIRD, FOURTH): False,
+        (FIRST, SECOND): CLONE,
+        (THIRD, FOURTH): NOT_A_CLONE,
     }
 
 
 def test_a_verdict_on_another_report_is_left_out() -> None:
     """A verdict on a pair the sample does not hold is ignored, not counted."""
-    judged = [
-        Label(SECOND, FIRST, clone=False, reason="another report"),
-        Label(FIRST, SECOND, clone=True, reason="same loop"),
-    ]
-    assert verdicts([(FIRST, SECOND)], judged) == {(FIRST, SECOND): True}
+    judged = [Label(SECOND, FIRST, clone=False, reason="6: another report"), CLONE]
+    assert verdicts([(FIRST, SECOND)], judged) == {(FIRST, SECOND): CLONE}
 
 
 def test_a_pair_judged_twice_is_refused() -> None:
     """Two verdicts on one pair of the sample are refused, naming the pair."""
-    judged = [
-        Label(FIRST, SECOND, clone=True, reason="same loop"),
-        Label(FIRST, SECOND, clone=False, reason="second thoughts"),
-    ]
+    judged = [CLONE, Label(FIRST, SECOND, clone=False, reason="6: second thoughts")]
     with pytest.raises(ValueError, match=r"^one-1.0/a.py:1-5 ~ one-1.0/b.py:10-14: judged twice$"):
         verdicts([(FIRST, SECOND)], judged)
 
 
 def test_a_pair_not_judged_yet_is_refused() -> None:
     """A sample not judged to its end is refused, with how many are left and the first of them."""
-    judged = [Label(THIRD, FOURTH, clone=True, reason="same loop")]
+    judged = [Label(THIRD, FOURTH, clone=True, reason="1: same loop")]
     message = r"^2 pairs of the sample not judged yet, the first one-1.0/a.py:1-5 ~ "
     with pytest.raises(ValueError, match=message):
         verdicts([(FIRST, SECOND), (SECOND, FIRST), (THIRD, FOURTH)], judged)
@@ -272,7 +269,11 @@ def test_the_precision_of_a_measure() -> None:
 def test_each_release_is_measured_apart_and_the_whole_sample_too() -> None:
     """The sample gives one measure per release, in order, then one over all of it."""
     sample = [(FIRST, SECOND), (SECOND, FIRST), (THIRD, FOURTH)]
-    judged = {(FIRST, SECOND): True, (SECOND, FIRST): False, (THIRD, FOURTH): True}
+    judged = {
+        (FIRST, SECOND): CLONE,
+        (SECOND, FIRST): Label(SECOND, FIRST, clone=False, reason="6: only the shape"),
+        (THIRD, FOURTH): Label(THIRD, FOURTH, clone=True, reason="4: a family"),
+    }
     assert measures(sample, judged)[:3] == [
         Measure("one-1.0", 2, 1),
         Measure("two-2.0", 1, 1),
@@ -283,7 +284,7 @@ def test_each_release_is_measured_apart_and_the_whole_sample_too() -> None:
 def test_the_pairs_whose_copies_overlap_are_measured_apart() -> None:
     """A sample holding overlapping pairs is measured with them, and again without them."""
     sample = [(FIRST, SECOND), (THIRD, FOURTH)]
-    judged = {(FIRST, SECOND): True, (THIRD, FOURTH): False}
+    judged = {(FIRST, SECOND): CLONE, (THIRD, FOURTH): NOT_A_CLONE}
     assert measures(sample, judged)[-2:] == [
         Measure("their copies overlap", 1, 0),
         Measure("the sample without them", 1, 1),
@@ -293,10 +294,72 @@ def test_the_pairs_whose_copies_overlap_are_measured_apart() -> None:
 def test_a_sample_with_no_overlapping_pair_is_not_split() -> None:
     """With no overlapping pair, the split would repeat the whole sample: it is left out."""
     sample = [(FIRST, SECOND)]
-    assert measures(sample, {(FIRST, SECOND): True}) == [
+    assert measures(sample, {(FIRST, SECOND): CLONE}) == [
         Measure("one-1.0", 1, 1),
         Measure("the whole sample", 1, 1),
     ]
+
+
+@pytest.mark.parametrize(
+    ("reason", "number"),
+    [("4: locale table", 4), ("10: one day", 10), ("6: 2 arguments other", 6)],
+)
+def test_a_reason_names_the_criterion_that_decided_it(reason: str, number: int) -> None:
+    """The criterion of a verdict is the number its reason begins with, before the colon."""
+    assert criterion(Label(FIRST, SECOND, clone=True, reason=reason)) == number
+
+
+@pytest.mark.parametrize("reason", ["", "locale table", "4 locale table", " 4: locale table"])
+def test_a_reason_without_its_criterion_is_refused(reason: str) -> None:
+    """A reason not beginning with a criterion number and a colon is refused, with the pair."""
+    message = r"^one-1.0/a.py:1-5 ~ one-1.0/b.py:10-14: the reason must begin with the number "
+    with pytest.raises(ValueError, match=message):
+        criterion(Label(FIRST, SECOND, clone=True, reason=reason))
+
+
+def test_the_pairs_are_counted_by_the_criterion_that_decided_them() -> None:
+    """Each criterion met is listed, lowest first, with its count and what it counts them as."""
+    sample = [(FIRST, SECOND), (SECOND, FIRST), (THIRD, FOURTH)]
+    judged = {
+        (FIRST, SECOND): CLONE,
+        (SECOND, FIRST): Label(SECOND, FIRST, clone=True, reason="1: same loop again"),
+        (THIRD, FOURTH): NOT_A_CLONE,
+    }
+    assert criteria(sample, judged) == (
+        "criterion 1                           2  duplicated code\n"
+        "criterion 6                           1  not duplicated code"
+    )
+
+
+def test_a_criterion_that_decided_both_ways_is_refused() -> None:
+    """One criterion counting a pair as a clone and another as not is a verdict misfiled."""
+    sample = [(FIRST, SECOND), (SECOND, FIRST)]
+    judged = {
+        (FIRST, SECOND): CLONE,
+        (SECOND, FIRST): Label(SECOND, FIRST, clone=False, reason="1: not after all"),
+    }
+    message = r"^criterion 1 decided both ways, 1 of 2 pairs duplicated code: "
+    with pytest.raises(ValueError, match=message):
+        criteria(sample, judged)
+
+
+def test_the_reasons_given_to_more_than_one_pair_are_counted() -> None:
+    """A reason given twice or more is listed with its count, the commonest first."""
+    sample = [(FIRST, SECOND), (SECOND, FIRST), (THIRD, FOURTH), (FOURTH, THIRD)]
+    repeated = "4: a family on one pattern"
+    judged = {
+        (FIRST, SECOND): Label(FIRST, SECOND, clone=True, reason=repeated),
+        (SECOND, FIRST): Label(SECOND, FIRST, clone=True, reason="1: same loop"),
+        (THIRD, FOURTH): Label(THIRD, FOURTH, clone=True, reason=repeated),
+        (FOURTH, THIRD): Label(FOURTH, THIRD, clone=True, reason=repeated),
+    }
+    assert families(sample, judged) == f"    3  {repeated}"
+
+
+def test_a_sample_whose_reasons_are_all_its_own_lists_none() -> None:
+    """With no reason given twice, there is no family to list and nothing is printed."""
+    sample = [(FIRST, SECOND), (THIRD, FOURTH)]
+    assert not families(sample, {(FIRST, SECOND): CLONE, (THIRD, FOURTH): NOT_A_CLONE})
 
 
 def test_the_table_is_what_a_reader_reads() -> None:
@@ -320,10 +383,13 @@ def test_the_figure_the_readme_gives_is_the_figure_of_the_sample_committed() -> 
         ],
         shown,
     )
+    printed = shown.getvalue().splitlines()
     assert (
         "the whole sample                     60              56     93.3 %  [84.0 %, 97.4 %]"
-        in shown.getvalue().splitlines()
+        in printed
     )
+    assert "criterion 4                          26  duplicated code" in printed
+    assert "   16  4: locale table, same settings other values" in printed
 
 
 def test_the_table_is_printed_for_the_files_given(tmp_path: Path) -> None:
@@ -331,17 +397,24 @@ def test_the_table_is_printed_for_the_files_given(tmp_path: Path) -> None:
     sample = sample_of(tmp_path, (FIRST, SECOND), (THIRD, FOURTH))
     judged = labels_of(
         tmp_path,
-        Label(FIRST, SECOND, clone=True, reason="same loop"),
-        Label(THIRD, FOURTH, clone=True, reason="shifted window"),
+        CLONE,
+        Label(THIRD, FOURTH, clone=True, reason="1: same loop"),
     )
     shown = io.StringIO()
     main(["--sample", str(sample), "--labels", str(judged)], shown)
-    assert shown.getvalue().splitlines()[1:] == [
+    assert shown.getvalue().splitlines() == [
+        "                                  pairs duplicated code  precision  95 % Wilson",
         "one-1.0                               1               1    100.0 %  [20.6 %, 100.0 %]",
         "two-2.0                               1               1    100.0 %  [20.6 %, 100.0 %]",
         "the whole sample                      2               2    100.0 %  [34.2 %, 100.0 %]",
         "their copies overlap                  1               1    100.0 %  [20.6 %, 100.0 %]",
         "the sample without them               1               1    100.0 %  [20.6 %, 100.0 %]",
+        "",
+        "the criterion each verdict was decided on:",
+        "criterion 1                           2  duplicated code",
+        "",
+        "the reasons given to more than one pair:",
+        "    2  1: same loop",
     ]
 
 
