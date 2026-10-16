@@ -76,9 +76,6 @@ filterwarnings = ["error"]
 xfail_strict = true
 addopts = "--strict-markers --strict-config --cov=clonedigger --cov=benchmarks.label --cov=benchmarks.precision --cov-branch --cov-report=term-missing --cov-fail-under=100"
 
-[tool.coverage.run]
-source = ["src/clonedigger", "benchmarks/label.py", "benchmarks/precision.py"]
-
 [dependency-groups]
 dev = [
     "deptry==0.25.1",
