@@ -14,9 +14,22 @@ import pytest
 
 from clonedigger import __version__
 from clonedigger.cli import main, python_files
+from clonedigger.config import REPORT_FORMATS
 from clonedigger.detection import Clone, Settings
 
 INPUTS = Path(__file__).parent / "golden" / "inputs"
+
+
+def one_function(path: Path) -> None:
+    """Write a file holding the first function of the recorded inputs, and nothing else.
+
+    Two such files are clones of each other; one on its own holds no clone.
+
+    Args:
+        path: The file to write.
+    """
+    source = (INPUTS / "prices.py").read_text(encoding="utf-8")
+    path.write_text(source.split("def total_with_rebate")[0], encoding="utf-8")
 
 
 def test_text_report(capsys: pytest.CaptureFixture[str]) -> None:
@@ -234,6 +247,70 @@ def test_every_option_reaches_the_settings(monkeypatch: pytest.MonkeyPatch) -> N
     assert received == [Settings(7, 3, 9, 4, force=True)]
     main([str(INPUTS)])
     assert received[-1] == Settings()
+
+
+def test_options_written_down_in_pyproject_are_used(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The options under [tool.clonedigger] of the nearest pyproject.toml are used."""
+    (tmp_path / "prices.py").write_text(
+        (INPUTS / "prices.py").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    assert main([str(tmp_path)]) == 1
+    (tmp_path / "pyproject.toml").write_text(
+        "[tool.clonedigger]\nsize-threshold = 30\n", encoding="utf-8"
+    )
+    assert main([str(tmp_path)]) == 0
+    capsys.readouterr()
+
+
+def test_the_command_line_wins_over_what_is_written_down(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A threshold and a format given on the command line override those written down."""
+    (tmp_path / "prices.py").write_text(
+        (INPUTS / "prices.py").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    (tmp_path / "pyproject.toml").write_text(
+        '[tool.clonedigger]\nsize-threshold = 30\nformat = "json"\n', encoding="utf-8"
+    )
+    assert main([str(tmp_path)]) == 0
+    assert json.loads(capsys.readouterr().out) == []
+    assert main([str(tmp_path), "--size-threshold", "5", "--format", "text"]) == 1
+    assert capsys.readouterr().out.rstrip().endswith("1 clone found.")
+
+
+def test_a_repeatable_option_adds_to_what_is_written_down(tmp_path: Path) -> None:
+    """--ignore-dir skips a directory as well as those written down."""
+    one_function(tmp_path / "a.py")
+    for name in ("vendor", "build"):
+        (tmp_path / name).mkdir()
+        one_function(tmp_path / name / "copy.py")
+    (tmp_path / "pyproject.toml").write_text(
+        '[tool.clonedigger]\nignore-dir = ["vendor"]\n', encoding="utf-8"
+    )
+    assert main([str(tmp_path)]) == 1
+    assert main([str(tmp_path), "--ignore-dir", "build"]) == 0
+
+
+def test_options_that_cannot_be_used_stop_the_command(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A key that names no option stops the command, with status 2 and a message."""
+    (tmp_path / "pyproject.toml").write_text(
+        "[tool.clonedigger]\nnot-an-option = 1\n", encoding="utf-8"
+    )
+    assert main([str(tmp_path)]) == 2
+    err = capsys.readouterr().err
+    assert err.startswith("clonedigger: ")
+    assert 'has no option "not-an-option"' in err
+
+
+@pytest.mark.parametrize("name", REPORT_FORMATS)
+def test_every_format_offered_is_written(name: str, capsys: pytest.CaptureFixture[str]) -> None:
+    """Each format --format accepts, and the file accepts, produces a report."""
+    assert main([str(INPUTS), "--format", name]) == 1
+    assert capsys.readouterr().out.strip()
 
 
 def test_sarif_report(capsys: pytest.CaptureFixture[str]) -> None:

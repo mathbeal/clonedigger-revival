@@ -58,8 +58,8 @@ clonedigger PATH [PATH ...] [--format text|json|sarif|html] [options]
 ```
 
 `PATH` is a Python file or a directory, searched recursively. The exit status is 0 when
-no clone is found, 1 when clones are found, 2 when a file cannot be read, so that the
-command can gate a CI job.
+no clone is found, 1 when clones are found, 2 when a file cannot be read or the options
+written down cannot be used, so that the command can gate a CI job.
 
 | Option | Default | Meaning |
 |---|---|---|
@@ -81,6 +81,32 @@ The Python running `clonedigger` reads the syntax of its own version and earlier
 `match`, `async`, `yield from`, `except*`, generics, f-strings and the rest are read
 (see `tests/samples/syntax_probe.py`). Code written for a later Python must be read with
 that Python; Python 2 code is not read.
+
+### Written down in pyproject.toml
+
+A project sets its options once, in the file it already has, instead of repeating them
+in every command line and every CI job. Each option of the table above, except
+`--version`, is a key under `[tool.clonedigger]`, with the name it has on the command
+line without the dashes in front:
+
+```toml
+[tool.clonedigger]
+format = "json"
+size-threshold = 8
+distance-threshold = 3
+clustering-threshold = 10
+hashing-depth = 1
+force = true
+func-prefixes = ["test_", "bench_"]
+ignore-dir = ["vendor", "migrations"]
+```
+
+The file read is the nearest `pyproject.toml` at or above the first `PATH` given, up to
+the top of the repository: what lies above it is somebody else's. A value given on the
+command line wins over the one written down, and `--ignore-dir`, repeatable on the
+command line, skips its directory as well as those written down. A key that names no
+option, or a value of a kind the option does not take, stops the command with a message
+naming the file and the key, and the exit status 2.
 
 ## How it works
 
