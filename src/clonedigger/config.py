@@ -162,8 +162,9 @@ def _read_table(file: Path) -> dict[str, object]:
         The options, under the names argparse knows them by.
 
     Raises:
-        ConfigError: If the file is not valid TOML, if a key names no option, or if a
-            value is not of the kind its option takes.
+        ConfigError: If the file cannot be read, if it is not valid TOML, if a table is
+            written as something else, if a key names no option, or if a value is not of
+            the kind its option takes.
     """
     try:
         with file.open("rb") as handle:
@@ -171,7 +172,14 @@ def _read_table(file: Path) -> dict[str, object]:
     except tomllib.TOMLDecodeError as error:
         msg = f"{file} is not valid TOML: {error}"
         raise ConfigError(msg) from error
-    table: object = document.get("tool", {}).get("clonedigger", {})
+    except OSError as error:
+        msg = f"{file} cannot be read: {error}"
+        raise ConfigError(msg) from error
+    tool: object = document.get("tool", {})
+    if not isinstance(tool, dict):
+        msg = f"{file}: [tool] must be a table of tools"
+        raise ConfigError(msg)
+    table: object = tool.get("clonedigger", {})
     if not isinstance(table, dict):
         msg = f"{file}: {TABLE_NAME} must be a table of options"
         raise ConfigError(msg)

@@ -172,10 +172,46 @@ def test_a_table_written_as_something_else_is_refused(tmp_path: Path) -> None:
         read_options(tmp_path)
 
 
+def test_a_tool_table_written_as_something_else_is_refused(tmp_path: Path) -> None:
+    """`tool` that is not a table stops the reading instead of breaking the command."""
+    (tmp_path / FILE_NAME).write_text("tool = 3\n", encoding="utf-8")
+    with pytest.raises(ConfigError, match=r"\[tool\] must be a table of tools"):
+        read_options(tmp_path)
+
+
 def test_a_file_that_is_not_valid_toml_is_refused(tmp_path: Path) -> None:
     """A pyproject.toml that TOML cannot read is named, with what TOML says about it."""
     file = tmp_path / FILE_NAME
     file.write_text("[tool.clonedigger\nforce = true\n", encoding="utf-8")
     with pytest.raises(ConfigError, match="is not valid TOML") as refusal:
+        read_options(tmp_path)
+    assert str(file) in str(refusal.value)
+
+
+def test_a_file_that_cannot_be_opened_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A pyproject.toml the system will not open is named, with what it says about it.
+
+    The rights of a file are not refused the same way on every system, so opening is
+    what refuses here.
+    """
+    file = written_down(tmp_path, "force = true")
+
+    def refuse(*_args: object, **_kwargs: object) -> None:
+        """Refuse to open the file, as a lack of rights would.
+
+        Args:
+            *_args: What `Path.open` is given, unused.
+            **_kwargs: What `Path.open` is given by name, unused.
+
+        Raises:
+            OSError: Always.
+        """
+        msg = "Permission denied"
+        raise OSError(msg)
+
+    monkeypatch.setattr(Path, "open", refuse)
+    with pytest.raises(ConfigError, match="cannot be read: Permission denied") as refusal:
         read_options(tmp_path)
     assert str(file) in str(refusal.value)

@@ -101,12 +101,20 @@ func-prefixes = ["test_", "bench_"]
 ignore-dir = ["vendor", "migrations"]
 ```
 
+`func-prefixes` and `ignore-dir` are written as lists here, one prefix or one directory
+to an item, where the command line takes commas and a repeated option.
+
 The file read is the nearest `pyproject.toml` at or above the first `PATH` given, up to
 the top of the repository: what lies above it is somebody else's. A value given on the
-command line wins over the one written down, and `--ignore-dir`, repeatable on the
-command line, skips its directory as well as those written down. A key that names no
-option, or a value of a kind the option does not take, stops the command with a message
-naming the file and the key, and the exit status 2.
+command line wins over the one written down, with what each option's own shape implies:
+`--ignore-dir`, repeatable, skips its directory as well as those written down, and
+`force = true` written down cannot be turned off from the command line, which has no
+`--no-force`.
+
+A key that names no option, a value of a kind the option does not take, a table written
+as something else, and a file that TOML cannot read or the system will not open each
+stop the command with a message naming the file and what is wrong, and the exit
+status 2.
 
 ## How it works
 
