@@ -1,6 +1,6 @@
 # Copyright 2008 Peter Bulychev (Clone Digger 1.1.0, clonedigger.py)
 # Copyright 2026 Mathieu Béal (modified 2026-10-07: rewritten with argparse;
-# 2026-10-08: every function documented)
+# 2026-10-08: every function documented; 2026-10-16: options read from pyproject.toml)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """The `clonedigger` command: find the clones in Python files and directories."""
@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
 from clonedigger import __version__
+from clonedigger.config import REPORT_FORMATS, ConfigError, read_options
 from clonedigger.detection import Settings, find_clones
 from clonedigger.html_report import as_html
 from clonedigger.python_frontend import read_source
@@ -43,7 +44,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(
         "--format",
-        choices=(*REPORTS, "html"),
+        choices=REPORT_FORMATS,
         default="text",
         help="report format (default text); html is one page, to save and open",
     )
@@ -145,9 +146,19 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     Returns:
         The exit status: 0 with no clone, 1 when clones are found, 2 on an unreadable
-        file.
+        file or on options written down that cannot be used.
     """
-    options = _parser().parse_args(argv)
+    parser = _parser()
+    options = parser.parse_args(argv)
+    # The paths say which project is being read, so its options are read next, and the
+    # command line is read again over them: what it says wins.
+    try:
+        written_down = read_options(options.paths[0])
+    except ConfigError as error:
+        sys.stderr.write(f"clonedigger: {error}\n")
+        return 2
+    parser.set_defaults(**written_down)
+    options = parser.parse_args(argv)
     files: list[SourceFile] = []
     unreadable = False  # pragma: no mutate - None would be just as false
     for path in python_files(options.paths, options.ignore_dir):
