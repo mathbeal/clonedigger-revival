@@ -23,7 +23,7 @@ Each step ends with `just check` green and every mutant killed.
    To come: decide whether a pair whose two copies overlap (a run of similar statements
    and the same run shifted) should be reported, which 1.1.0 did; nine of the sixty
    pairs of the sample are of that kind, and a reader judged all nine duplicated code.
-6. **Done: continuous integration** (every gate, Python 3.12 to 3.14 on Linux, macOS and
+6. **Done: continuous integration** (every gate, Python 3.12 to 3.15 on Linux, macOS and
    Windows, mutation weekly), REUSE licensing, the README.
 7. **Publish**, with the original author's agreement on the name: attested releases
    on PyPI.
