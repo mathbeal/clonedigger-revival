@@ -1,7 +1,7 @@
 # Clone Digger, revived for Python 3
 
 [![CI](https://github.com/mathbeal/clonedigger-revival/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/mathbeal/clonedigger-revival/actions/workflows/quality.yml)
-[![Python 3.12 | 3.13 | 3.14](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue)](pyproject.toml)
+[![Python 3.12 | 3.13 | 3.14 | 3.15](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue)](pyproject.toml)
 [![Licence: GPL-3.0-or-later](https://img.shields.io/badge/licence-GPL--3.0--or--later-blue)](LICENSE)
 [![REUSE compliant](https://img.shields.io/badge/REUSE-compliant-green)](https://reuse.software)
 [![Coverage: 100 % of lines and branches](https://img.shields.io/badge/coverage-100%25%20lines%20%26%20branches-brightgreen)](justfile)
