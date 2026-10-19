@@ -1,0 +1,13 @@
+# Copyright 2026 Mathieu Béal
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# What a project gets by naming this repository in its .pre-commit-config.yaml: the
+# command run on the Python files of the commit, which fails when it finds a clone.
+# README, "In a pre-commit hook"; tests/test_pre_commit_hook.py checks this file.
+- id: clonedigger
+  name: clonedigger (duplicated code)
+  description: Find duplicated code by comparing syntax trees.
+  entry: clonedigger
+  language: python
+  types: [python]
+  pass_filenames: true
