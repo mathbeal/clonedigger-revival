@@ -71,6 +71,12 @@ python_version = "3.12"
 files = ["src", "tests", "benchmarks"]
 exclude = ["^legacy/", "^tests/golden/", "^tests/samples/"]
 
+# pre-commit ships no annotations, and reading .pre-commit-hooks.yaml against its own
+# schema is the one thing the tests ask of it.
+[[tool.mypy.overrides]]
+module = ["pre_commit.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # The root on the path, so that the tests import the scripts of benchmarks/ by their
@@ -87,6 +93,8 @@ dev = [
     "jsonschema==4.25.1",
     "mutmut==3.8.0",
     "mypy==2.4.0",
+    # Its schema for .pre-commit-hooks.yaml, which the tests read that file against.
+    "pre-commit==4.7.0",
     "pylint==4.0.9",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",

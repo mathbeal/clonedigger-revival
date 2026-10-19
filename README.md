@@ -116,6 +116,29 @@ as something else, and a file that TOML cannot read or the system will not open 
 stop the command with a message naming the file and what is wrong, and the exit
 status 2.
 
+### In a pre-commit hook
+
+A project using [pre-commit](https://pre-commit.com) names this repository in its
+`.pre-commit-config.yaml` and gets the `clonedigger` hook, which `pre-commit` builds
+from the sources at the revision asked for:
+
+```yaml
+repos:
+  - repo: https://github.com/mathbeal/clonedigger-revival
+    rev: v0.1.0
+    hooks:
+      - id: clonedigger
+```
+
+`rev` is the tag of a release, or the hash of a commit as long as none is tagged yet
+(publishing is the last step of the [roadmap](ROADMAP.md)); `pre-commit autoupdate`
+writes the latest tag.
+
+The hook is given the Python files of the commit, so it reports a clone between two of
+them or inside one, not between a file of the commit and the rest of the tree: for that,
+run the command on the whole project, in a CI job. A clone found stops the commit, and
+the project's own `[tool.clonedigger]` holds the thresholds, as above.
+
 ## How it works
 
 1. Each file is parsed with `ast` and split into sequences of statements: the bodies of
