@@ -47,6 +47,7 @@ path = [
     "benchmarks/results.json",
     "benchmarks/sample.json",
     "benchmarks/labels.jsonl",
+    "examples/report.*",
     "uv.lock",
     "src/clonedigger/py.typed",
     ".gitignore",

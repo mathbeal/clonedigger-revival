@@ -45,7 +45,9 @@ include = ["/src", "/tests", "/README.md", "/NOTICE.md", "/LICENSE", "/LICENSES"
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-extend-exclude = ["legacy", "tests/golden", "tests/samples"]
+# Code written to be read by the tool, not by ruff: the original release, the inputs of
+# the tests, and the example whose whole point is the duplication left in it.
+extend-exclude = ["examples", "legacy", "tests/golden", "tests/samples"]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -129,7 +131,12 @@ known_first_party = ["clonedigger"]
 [tool.mutmut]
 source_paths = ["src/clonedigger/", "benchmarks/label.py", "benchmarks/precision.py"]
 do_not_mutate = ["src/clonedigger/__init__.py"]
-also_copy = ["tests/golden/", "benchmarks/sample.json", "benchmarks/labels.jsonl"]
+also_copy = [
+    "tests/golden/",
+    "examples/",
+    "benchmarks/sample.json",
+    "benchmarks/labels.jsonl",
+]
 pytest_add_cli_args = ["--no-cov", "-p", "no:cacheprovider"]
 
 [tool.lexdrift.nouns]
