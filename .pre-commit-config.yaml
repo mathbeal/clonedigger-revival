@@ -1,9 +1,9 @@
 # Copyright 2026 Mathieu Béal
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# The original release, the files the tests read and the changelog (git-cliff) stay
-# byte for byte as they are.
-exclude: ^(legacy/|tests/golden/|tests/data/|CHANGELOG\.md$)
+# The original release, the files the tests read, the reports of examples/ written by
+# `just examples` and the changelog (git-cliff) stay byte for byte as they are.
+exclude: ^(legacy/|tests/golden/|tests/data/|examples/report\.|CHANGELOG\.md$)
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

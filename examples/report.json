@@ -1,0 +1,28 @@
+[
+  {
+    "first": {
+      "path": "examples/shipping.py",
+      "start": 46,
+      "end": 54
+    },
+    "second": {
+      "path": "examples/shipping.py",
+      "start": 35,
+      "end": 43
+    },
+    "distance": 4.0
+  },
+  {
+    "first": {
+      "path": "examples/shipping.py",
+      "start": 66,
+      "end": 72
+    },
+    "second": {
+      "path": "examples/shipping.py",
+      "start": 57,
+      "end": 63
+    },
+    "distance": 4.0
+  }
+]

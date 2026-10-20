@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clone Digger report</title>
+<style>
+:root { color-scheme: light dark; --mark: #ffd8d8; --line: #888; }
+@media (prefers-color-scheme: dark) { :root { --mark: #6b2020; } }
+body { font-family: system-ui, sans-serif; margin: 1.5rem; }
+table { border-collapse: collapse; width: 100%; table-layout: fixed; margin-bottom: 2rem; }
+th, td { border: 1px solid var(--line); padding: 0.25rem 0.5rem; vertical-align: top; }
+pre { margin: 0; white-space: pre-wrap; font-family: ui-monospace, monospace; }
+mark { background: var(--mark); color: inherit; }
+</style>
+</head>
+<body>
+<h1>Clone Digger report</h1>
+<p>2 clones found. Clone Digger 0.0.1.dev0, by Peter Bulychev, ported to Python 3.</p>
+<h2 id="clone-1">Clone 1</h2>
+<p>Distance 4, up to 9 lines.</p>
+<table>
+<tr><th>examples/shipping.py:46-54</th><th>examples/shipping.py:35-43</th></tr>
+<tr><td><pre>def <mark>standard_cost</mark>(parcels: list[Parcel]) -&gt; float:
+    &quot;&quot;&quot;What the parcels carried <mark>in a week</mark> cost, to the cent.&quot;&quot;&quot;
+    <mark>amount</mark> = 0.0
+    for parcel in parcels:
+        <mark>cost</mark> = parcel.weight * <mark>STANDARD_RATE</mark>
+        if parcel.discount:
+            <mark>cost</mark> = <mark>cost</mark> - parcel.discount
+        <mark>amount</mark> = <mark>amount</mark> + <mark>cost</mark>
+    return round(<mark>amount</mark>, 2)</pre></td><td><pre>def <mark>express_cost</mark>(parcels: list[Parcel]) -&gt; float:
+    &quot;&quot;&quot;What the parcels carried <mark>overnight</mark> cost, to the cent.&quot;&quot;&quot;
+    <mark>total</mark> = 0.0
+    for parcel in parcels:
+        <mark>price</mark> = parcel.weight * <mark>EXPRESS_RATE</mark>
+        if parcel.discount:
+            <mark>price</mark> = <mark>price</mark> - parcel.discount
+        <mark>total</mark> = <mark>total</mark> + <mark>price</mark>
+    return round(<mark>total</mark>, 2)</pre></td></tr>
+</table>
+<h2 id="clone-2">Clone 2</h2>
+<p>Distance 4, up to 7 lines.</p>
+<table>
+<tr><th>examples/shipping.py:66-72</th><th>examples/shipping.py:57-63</th></tr>
+<tr><td><pre>def <mark>pallet_from_row</mark>(row: dict[str, str]) -&gt; <mark>Pallet</mark>:
+    &quot;&quot;&quot;Read a <mark>pallet</mark> from a row of the carrier&#x27;s file.&quot;&quot;&quot;
+    code = row[&quot;code&quot;].strip().upper()
+    if not code:
+        raise ValueError(f&quot;a row without a code: {row}&quot;)
+    <mark>height</mark> = float(row.get(&quot;<mark>height</mark>&quot;, &quot;0&quot;))
+    return <mark>Pallet</mark>(code, <mark>height</mark>, row.get(&quot;<mark>stackable</mark>&quot;) == &quot;yes&quot;)</pre></td><td><pre>def <mark>parcel_from_row</mark>(row: dict[str, str]) -&gt; <mark>Parcel</mark>:
+    &quot;&quot;&quot;Read a <mark>parcel</mark> from a row of the carrier&#x27;s file.&quot;&quot;&quot;
+    code = row[&quot;code&quot;].strip().upper()
+    if not code:
+        raise ValueError(f&quot;a row without a code: {row}&quot;)
+    <mark>weight</mark> = float(row.get(&quot;<mark>weight</mark>&quot;, &quot;0&quot;))
+    return <mark>Parcel</mark>(code, <mark>weight</mark>, row.get(&quot;<mark>express</mark>&quot;) == &quot;yes&quot;)</pre></td></tr>
+</table>
+</body>
+</html>

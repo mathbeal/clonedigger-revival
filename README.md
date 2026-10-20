@@ -41,6 +41,10 @@ tests/golden/inputs/prices.py:13-18  ~  tests/golden/inputs/prices.py:2-7  (dist
 Those two loops compute a total with `total`, `item` and `price` on one side, `amount`,
 `line` and `cost` on the other: a line-based tool sees nothing in common.
 
+A longer example, and one run of the tool on it written out in each of the four formats,
+text, JSON, SARIF and HTML, are in [examples/](examples/README.md): what the tool
+reports, to read before installing anything.
+
 ## Install
 
 From a clone of this repository, with [uv](https://docs.astral.sh/uv/):
@@ -283,6 +287,7 @@ just check     # lint, types, tests at 100 % of lines and branches, dead code, v
 just hygiene   # typos and licences (REUSE)
 just mutate    # mutation testing: every mutant must be caught
 just compare   # Clone Digger, pylint and jscpd on pinned releases (needs Node.js)
+just examples  # write the four reports of examples/ again
 just label     # judge the pairs of a JSON report, side by side, and record the verdicts
 just sample    # draw the sample of pairs precision is measured on, with its fixed seed
 just precision # precision on that sample, with its Wilson 95 % interval
