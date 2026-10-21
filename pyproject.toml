@@ -44,7 +44,6 @@ include = ["/src", "/tests", "/README.md", "/NOTICE.md", "/LICENSE", "/LICENSES"
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
 # Code written to be read by the tool, not by ruff: the original release, the inputs of
 # the tests, and the example whose whole point is the duplication left in it.
 extend-exclude = ["examples", "legacy", "tests/golden", "tests/samples"]
