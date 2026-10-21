@@ -143,6 +143,16 @@ them or inside one, not between a file of the commit and the rest of the tree: f
 run the command on the whole project, in a CI job. A clone found stops the commit, and
 the project's own `[tool.clonedigger]` holds the thresholds, as above.
 
+### In GitHub code scanning
+
+`--format sarif` writes the report GitHub code scanning reads: uploaded by a workflow,
+each clone becomes an alert on the lines of its first copy, with the second copy linked
+beside it. The workflow to copy is
+[`examples/code-scanning.yml`](examples/code-scanning.yml), with its actions pinned to a
+commit and the one permission the upload needs; what each of its lines is for, what an
+alert holds and how many alerts GitHub displays are in
+[docs/github-code-scanning.md](docs/github-code-scanning.md).
+
 ## How it works
 
 1. Each file is parsed with `ast` and split into sequences of statements: the bodies of

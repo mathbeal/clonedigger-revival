@@ -1,0 +1,41 @@
+name: duplicated code
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# No job may do anything until it says so.
+permissions: {}
+
+# A new push to a pull request makes the previous run obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  clonedigger:
+    name: clone digger, to code scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read          # check the code out
+      security-events: write  # upload the SARIF report
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: find duplicated code
+        # No release is tagged yet: until there is one, write the hash of a commit of
+        # this repository in place of v0.1.0, or the job stops at the install.
+        # The status 1 says clones were found: they are the alerts to upload, not a
+        # failure of the job. Any other status, 2 for a file that cannot be read or
+        # options that cannot be used, stops it here.
+        run: |
+          uvx --from 'git+https://github.com/mathbeal/clonedigger-revival@v0.1.0' \
+            clonedigger src --format sarif > clonedigger.sarif || [ "$?" -eq 1 ]
+      - uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: clonedigger.sarif
+          category: clonedigger
