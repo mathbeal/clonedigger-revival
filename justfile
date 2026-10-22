@@ -58,7 +58,7 @@ hygiene:
 
 # Check that every link of the Markdown files leads somewhere (needs Docker).
 links:
-    docker run --rm -v "$PWD:/input" -w /input lycheeverse/lychee@sha256:eaff3e0a13603c9a701accfcc84f44158bb77bf36ecfa4622b626056c3463892 --config lychee.toml --no-progress README.md CONTRIBUTING.md SECURITY.md ROADMAP.md NOTICE.md CODE_OF_CONDUCT.md docs/precision.md examples/README.md
+    docker run --rm -v "$PWD:/input" -w /input lycheeverse/lychee@sha256:eaff3e0a13603c9a701accfcc84f44158bb77bf36ecfa4622b626056c3463892 --config lychee.toml --no-progress README.md CONTRIBUTING.md SECURITY.md ROADMAP.md NOTICE.md CODE_OF_CONDUCT.md docs/how-it-works.md docs/precision.md examples/README.md
 
 # Write CHANGELOG.md again from the commit history (git-cliff, cliff.toml).
 changelog:

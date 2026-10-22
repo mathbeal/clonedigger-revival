@@ -40,7 +40,7 @@ jobs:
           args: >-
             --config lychee.toml --no-progress
             README.md CONTRIBUTING.md SECURITY.md ROADMAP.md NOTICE.md CODE_OF_CONDUCT.md
-            examples/README.md
+            docs/how-it-works.md examples/README.md
           fail: true
           jobSummary: true
         env:
