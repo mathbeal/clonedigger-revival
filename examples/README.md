@@ -32,6 +32,13 @@ Both clones span a whole function, its `def` line included: the statements of th
 are compared as well as those of each body, and a function definition is one of them,
 with everything written under it.
 
+## The workflow beside them
+
+[`code-scanning.yml`](code-scanning.yml) is a GitHub Actions workflow to copy into a
+project: it runs the tool, writes `report.sarif` of the kind above and sends it to
+GitHub code scanning, where each clone becomes an alert. What each of its lines is for
+is in [docs/github-code-scanning.md](../docs/github-code-scanning.md).
+
 ## Keeping them up to date
 
     just examples
