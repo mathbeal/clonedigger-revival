@@ -41,6 +41,7 @@ from clonedigger.python_frontend import read_source
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from typing import TextIO
 
     from clonedigger.python_frontend import SourceFile, Statement
 
@@ -84,7 +85,8 @@ def read(paths: Sequence[Path]) -> list[SourceFile]:
     files: list[SourceFile] = []
     for path in python_files(paths, LEFT_OUT):
         try:
-            files.append(read_source(path, path.read_text(encoding="utf-8"), ()))
+            text = path.read_text(encoding="utf-8")  # pragma: no mutate - "UTF-8" is the same
+            files.append(read_source(path, text))
         except (SyntaxError, OSError, UnicodeDecodeError) as error:
             sys.stderr.write(f"left out: {path}: {error}\n")
     return files
@@ -117,7 +119,36 @@ def gather_and_mark(buckets: Sequence[list[Statement]], settings: Settings) -> l
     return measured
 
 
-def _share(seconds: float, whole: float) -> str:
+def steps_of(
+    reading: float, shaping: float, buckets: Sequence[Bucket], run: float
+) -> list[tuple[str, float]]:
+    """Name each step of a run and say how long it took.
+
+    The four first are timed as they run. The last is what the whole run took beyond
+    the three that the run goes through again: the suffix tree and the refinement.
+
+    Args:
+        reading: How long parsing the files took.
+        shaping: How long keeping the long sequences and shaping them into buckets took.
+        buckets: What each bucket cost.
+        run: How long the whole run took, reading left out.
+
+    Returns:
+        Each step and its seconds, in the order the steps run.
+    """
+    inside = [
+        ("shaping into buckets", shaping),
+        ("gathering into clusters", sum(bucket.gathering for bucket in buckets)),
+        ("marking the statements", sum(bucket.marking for bucket in buckets)),
+    ]
+    return [
+        ("reading the files", reading),
+        *inside,
+        ("suffix tree, refining", run - sum(seconds for _, seconds in inside)),
+    ]
+
+
+def share(seconds: float, whole: float) -> str:
     """Write a duration and the share of a whole it makes.
 
     Args:
@@ -125,23 +156,28 @@ def _share(seconds: float, whole: float) -> str:
         whole: What it is a share of.
 
     Returns:
-        The two, as `12.3 s (45 %)`.
+        The two, as `  12.3 s ( 45 %)`.
     """
     return f"{seconds:6.1f} s ({100 * seconds / whole:3.0f} %)"
 
 
-def _report(buckets: Sequence[Bucket], steps: Sequence[tuple[str, float]], whole: float) -> str:
+def report(buckets: Sequence[Bucket], steps: Sequence[tuple[str, float]]) -> str:
     """Write down the share of each step, then the biggest and the costliest bucket.
+
+    A bucket's share of the two steps is written with a decimal: rounded to the whole
+    percent, a bucket worth two and a half of them reads as 2 % in one run and 3 % in
+    the next, and no figure of the README may wobble that way.
 
     Args:
         buckets: What each bucket held and cost.
-        steps: Each step and how long it took, in the order they run.
-        whole: How long the run took in all.
+        steps: Each step and how long it took, in the order they run; they add up to
+            the whole run.
 
     Returns:
-        The report, one step to a line.
+        The report, one step to a line, then a line for each of the two buckets.
     """
-    lines = [f"{name:24}{_share(seconds, whole)}" for name, seconds in steps]
+    whole = sum(seconds for _, seconds in steps)
+    lines = [f"{name:24}{share(seconds, whole)}" for name, seconds in steps]
     lines.append(f"{'whole run':24}{whole:6.1f} s")
     spent = sum(bucket.seconds for bucket in buckets)
     for name, bucket in (
@@ -150,16 +186,17 @@ def _report(buckets: Sequence[Bucket], steps: Sequence[tuple[str, float]], whole
     ):
         lines.append(
             f"\n{name}: {bucket.statements:,} statements, {bucket.clusters:,} clusters, "
-            f"{bucket.seconds:.1f} s, {100 * bucket.seconds / spent:.0f} % of the two steps"
+            f"{bucket.seconds:.1f} s, {100 * bucket.seconds / spent:.1f} % of the two steps"
         )
     return "\n".join(lines)
 
 
-def main(names: Sequence[str]) -> None:
+def main(names: Sequence[str], writer: TextIO) -> None:
     """Measure the steps on the given paths, the standard library by default.
 
     Args:
         names: The files and directories to read.
+        writer: Where the report is written.
     """
     paths = [Path(name) for name in names] or [Path(sysconfig.get_path("stdlib"))]
     settings = Settings()
@@ -172,26 +209,15 @@ def main(names: Sequence[str]) -> None:
     shaping = time.perf_counter() - start
     measured = gather_and_mark(list(buckets.values()), settings)
     start = time.perf_counter()
-    clones = find_clones(files, settings)
+    # The thresholds are the defaults, the ones find_clones takes when given none.
+    clones = find_clones(files, settings)  # pragma: no mutate
     run = time.perf_counter() - start
-    # The steps the second run goes through again: what it takes beyond them is the
-    # suffix tree and the refinement.
-    inside = [
-        ("shaping into buckets", shaping),
-        ("gathering into clusters", sum(bucket.gathering for bucket in measured)),
-        ("marking the statements", sum(bucket.marking for bucket in measured)),
-    ]
-    steps = [
-        ("reading the files", reading),
-        *inside,
-        ("suffix tree, refining", run - sum(seconds for _, seconds in inside)),
-    ]
-    sys.stdout.write(
+    writer.write(
         f"{len(files):,} files, {sum(map(len, sequences)):,} statements in "
         f"{len(sequences):,} sequences, {len(buckets):,} buckets, {len(clones):,} clones\n\n"
-        f"{_report(measured, steps, reading + run)}\n"
+        f"{report(measured, steps_of(reading, shaping, measured, run))}\n"
     )
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main(sys.argv[1:], sys.stdout)

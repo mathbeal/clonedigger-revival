@@ -284,8 +284,8 @@ into buckets of the same rough shape 1 s, gathering each bucket into clusters 9 
 marking its statements 9 s, the suffix tree and the refinement 17 s. A bucket costs its
 number of statements times the number of clusters they are gathered into, not its number
 of statements: the biggest of the 2,663 buckets holds 4,668 statements in 50 clusters and
-takes half a second, 2 % of those two steps, while the costliest holds 4,623 statements
-in 295 clusters and takes 2 s, 12 %. `just bench` times a whole run again.
+takes half a second of those two steps, while the costliest holds 4,623 statements in 295
+clusters and takes 2 s. `just bench` times a whole run again.
 
 ## Development
 
