@@ -81,7 +81,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 filterwarnings = ["error"]
 xfail_strict = true
-addopts = "--strict-markers --strict-config --cov=clonedigger --cov=benchmarks.label --cov=benchmarks.precision --cov-branch --cov-report=term-missing --cov-fail-under=100"
+addopts = "--strict-markers --strict-config --cov=clonedigger --cov=benchmarks.label --cov=benchmarks.phases --cov=benchmarks.precision --cov-branch --cov-report=term-missing --cov-fail-under=100"
 
 [dependency-groups]
 dev = [
@@ -124,7 +124,12 @@ known_first_party = ["clonedigger"]
 # Mutation testing: change the code a little, one way at a time, and check that some
 # test fails. A mutant that survives is a behaviour no test pins down.
 [tool.mutmut]
-source_paths = ["src/clonedigger/", "benchmarks/label.py", "benchmarks/precision.py"]
+source_paths = [
+    "src/clonedigger/",
+    "benchmarks/label.py",
+    "benchmarks/phases.py",
+    "benchmarks/precision.py",
+]
 do_not_mutate = ["src/clonedigger/__init__.py"]
 also_copy = [
     "tests/golden/",

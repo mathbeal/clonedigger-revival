@@ -260,13 +260,16 @@ Run them together: they see different things.
 
 On an Apple M4 with Python 3.14: the `json` package of the standard library takes
 0.09 s, `email` 0.3 s, `asyncio` 0.5 s, and the whole standard library (455,000 lines,
-tests left out) 50 s and 1.1 GB of memory, against 222 s and 2.6 GB at first, with the
+tests left out) 44 s and 1.1 GB of memory, against 222 s and 2.6 GB at first, with the
 same 9,579 clones. What was done, measured step by step:
 
 - clustering, marking and refinement weigh only what they need (the sizes and the
   distance of an anti-unification, not its pattern), and stop as soon as the answer
   cannot change;
 - marking starts from the cluster a statement was gathered into, which bounds the rest;
+- a statement that is itself the pattern of a cluster is at a distance of zero from it,
+  which nothing beats: it is read off that pattern, and not one of the clusters of its
+  bucket is weighed. Marking the standard library takes 8.5 s instead of 14 s;
 - the suffix tree keeps where each suffix starts instead of a copy of it, and hands its
   two million candidates over one at a time instead of in one list;
 - trees no longer keep their covered lines on every node, and share line sets and names;
@@ -274,11 +277,15 @@ same 9,579 clones. What was done, measured step by step:
   took a time growing with the cube of its length: with `--force`, two files of 800
   similar assignments took more than four minutes, and take about 20 s. The clones are the
   same, and a test checks it against the search of 1.1.0; ordinary code takes a little
-  longer (50 s on the standard library, against 47 s), the price of that bound.
+  longer, about 3 s on the standard library, the price of that bound.
 
-The rest of the time goes to the largest bucket of similar statements (4,668 in the
-standard library), compared cluster by cluster, and to the suffix tree. `just bench`
-measures it again.
+Where that time goes is what `just phases` measures: reading the files 5 s, shaping them
+into buckets of the same rough shape 1 s, gathering each bucket into clusters 9 s,
+marking its statements 9 s, the suffix tree and the refinement 17 s. A bucket costs its
+number of statements times the number of clusters they are gathered into, not its number
+of statements: the biggest of the 2,663 buckets holds 4,668 statements in 50 clusters and
+takes half a second of those two steps, while the costliest holds 4,623 statements in 295
+clusters and takes 2 s. `just bench` times a whole run again.
 
 ## Development
 

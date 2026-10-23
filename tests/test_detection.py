@@ -513,3 +513,68 @@ def test_refining_finds_the_windows_an_exhaustive_search_finds(
         line += span
     first, second = tuple(sides[0]), tuple(sides[1])
     assert refine([(first, second)], Settings()) == exhaustive_refine(first, second)
+
+
+def marks_by_weighing_every_cluster(
+    statements: list[Statement], clusters: list[Cluster]
+) -> list[Cluster]:
+    """Mark statements the plain way: weigh every cluster, keep the closest.
+
+    Args:
+        statements: The statements of one bucket.
+        clusters: The clusters built from that bucket.
+
+    Returns:
+        The cluster each statement belongs to, in the order of the statements.
+    """
+    marks = []
+    for statement in statements:
+        distances = [
+            sum(difference(cluster.pattern or statement.tree, statement.tree))
+            for cluster in clusters
+        ]
+        marks.append(clusters[distances.index(min(distances))])
+    return marks
+
+
+# A statement of a bucket: the names of a call, drawn from four letters, so that the
+# same tree comes up again and clusters keep a statement of their own as their pattern.
+BUCKET = st.lists(
+    st.lists(st.sampled_from("abcd"), min_size=1, max_size=3), min_size=1, max_size=12
+)
+
+
+@given(BUCKET, st.integers(0, 4))
+def test_marking_agrees_with_weighing_every_cluster(names: list[list[str]], threshold: int) -> None:
+    """A statement read off its pattern gets the mark weighing every cluster gives."""
+    statements = [
+        Statement(Node("Call", tuple(Node(name) for name in used), lines={line}), Path("x.py"))
+        for line, used in enumerate(names, start=1)
+    ]
+    clusters = build_clusters(statements, threshold)
+    gathered = [len(cluster) for cluster in clusters]
+    expected = marks_by_weighing_every_cluster(statements, clusters)
+    mark_statements(statements, clusters)
+    assert [statement.mark for statement in statements] == expected
+    assert [len(cluster) for cluster in clusters] == [
+        count + expected.count(cluster) for count, cluster in zip(gathered, clusters, strict=True)
+    ]
+
+
+def test_a_statement_that_is_a_pattern_goes_to_the_first_cluster_holding_it() -> None:
+    """Two clusters on the same pattern: the statement equal to it joins the first."""
+    first = Cluster(Node("Add", (Node("a"), Node("b"))))
+    second = Cluster(Node("Add", (Node("a"), Node("b"))))
+    statement = Statement(Node("Add", (Node("a"), Node("b"))), Path("x.py"))
+    mark_statements([statement], [first, second])
+    assert statement.mark is first
+    assert len(second) == 1
+
+
+def test_a_cluster_without_a_pattern_keeps_the_statements_it_is_closest_to() -> None:
+    """No pattern means a distance of zero: the clusters after it are not read off."""
+    empty = Cluster()
+    twin = Cluster(Node("Add", (Node("a"), Node("b"))))
+    statement = Statement(Node("Add", (Node("a"), Node("b"))), Path("x.py"))
+    mark_statements([statement], [Cluster(Node("Add", (Node("c"), Node("d")))), empty, twin])
+    assert statement.mark is empty

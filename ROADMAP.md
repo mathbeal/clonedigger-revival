@@ -11,8 +11,9 @@ Each step ends with `just check` green and every mutant killed.
    **Done: mutation testing** of the whole package: every mutant is caught, by a
    failing test or by a time-out (a mutant that makes refinement loop forever).
 5. **Measure.** Done for speed: the whole standard library of Python 3.14 (455,000
-   lines, tests left out) takes 50 s and 1.1 GB instead of 222 s and 2.6 GB, with the
-   same 9,579 clones (`just bench`); a run of 800 similar statements, with `--force`,
+   lines, tests left out) takes 44 s and 1.1 GB instead of 222 s and 2.6 GB, with the
+   same 9,579 clones (`just bench`), and where those seconds go is measured step by step
+   and bucket by bucket (`just phases`); a run of 800 similar statements, with `--force`,
    takes about 20 s instead of more than four minutes. Done for comparison: pylint
    `duplicate-code` and jscpd on seven pinned releases of well-known projects, time,
    memory, pairs and share of lines (`just compare`, README).
