@@ -116,7 +116,7 @@ fuzz examples="50000":
 
 # Time the detection on packages of the standard library of growing size, and on the
 # whole of it (tests left out). Reference, Apple M4, Python 3.14: json 0.09 s, email
-# 0.3 s, asyncio 0.5 s, the whole library (455,000 lines) 50 s and 1.1 GB.
+# 0.3 s, asyncio 0.5 s, the whole library (455,000 lines) 44 s and 1.1 GB.
 bench:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -126,6 +126,13 @@ bench:
       found="$(uv run clonedigger "$lib/$target" --ignore-dir test --ignore-dir tests --ignore-dir idlelib | tail -1)" || true
       echo "$target: $(echo "$(date +%s.%N) - $start" | bc) s, $found"
     done
+
+# Split the time of a run between the steps of the pipeline, and name the bucket of
+# statements of the same rough shape that costs the most. Paths restrict it; the standard
+# library by default, which it reads twice (benchmarks/phases.py). The figures of the
+# "Speed and memory" section of the README.
+phases *paths:
+    uv run python -m benchmarks.phases {{paths}}
 
 # Known vulnerabilities in the locked dependencies.
 audit:

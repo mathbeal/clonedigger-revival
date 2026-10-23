@@ -1,7 +1,8 @@
 # Copyright 2008 Peter Bulychev (Clone Digger 1.1.0, clone_detection_algorithm.py)
 # Copyright 2026 Mathieu Béal (modified 2026-10-07: ported to Python 3, split in steps;
 # 2026-10-08: windows searched in square time, labels hashed the same in every run,
-# every function documented)
+# every function documented; 2026-10-23: a statement that is the pattern of a cluster
+# marked without weighing any)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Find the clones in a set of files: the pipeline of Clone Digger, step by step.
@@ -202,30 +203,79 @@ def build_clusters(statements: Sequence[Statement], threshold: int) -> list[Clus
 def mark_statements(statements: Sequence[Statement], clusters: Sequence[Cluster]) -> None:
     """Label each statement with the cluster whose pattern it is closest to.
 
+    A statement that is itself the pattern of a cluster is at a distance of zero from
+    it, and no distance is smaller: `_by_pattern` reads off which cluster receives it,
+    and not one is weighed. The others go to `_closest`, which weighs them against
+    every cluster of the bucket, and is where the time of a large run goes.
+
     Args:
         statements: The statements of one bucket.
         clusters: The clusters built from that bucket.
     """
+    patterns = _by_pattern(clusters)
     # The cluster each statement was gathered into: likely the closest, so weighing it
     # first gives a tight limit for all the others.
     # Like the limits below, it only saves time: the closest cluster is the same without.
     home = _homes(clusters)
     for statement in statements:
-        # The cluster whose pattern the statement is closest to, the first on a tie.
-        # Clone Digger 1.1.0 also added the statement to every cluster that improved on
-        # the best so far, which inflated their sizes; only the chosen one receives it.
-        # A cluster stops being weighed once it cannot be closer than the best so far.
-        start = home.get(id(statement.tree))  # pragma: no mutate - time only
-        known = _known_distance(start, statement.tree)  # pragma: no mutate - time only
-        # Just above the known distance: a cluster as close but earlier still wins.
-        ceiling = math.nextafter(known, math.inf)
-        best, lowest = clusters[0], math.inf
-        for cluster in clusters:
-            distance = _distance_to(cluster, statement.tree, min(lowest, ceiling))
-            if distance < lowest:
-                best, lowest = cluster, distance
+        best = patterns.get(statement.tree)  # pragma: no mutate - time only
+        if best is None:
+            best = _closest(clusters, statement.tree, home)
         statement.mark = best
         best.add_without_unification(statement.tree)
+
+
+def _by_pattern(clusters: Sequence[Cluster]) -> dict[Node, Cluster]:
+    """Find, for each pattern, the first cluster that holds it.
+
+    A cluster made without a tree has no pattern, and `_closest` reads it as being at a
+    distance of zero from every statement: the clusters after it are left out, so that
+    it keeps the statements it would receive.
+
+    Filling the table saves time only, `_closest` choosing the same cluster: a change
+    that leaves it empty gives the same marks, so the two lines that fill it are left
+    out of mutation testing. One that fills it with another cluster marks a statement
+    with another cluster, and the tests catch that, as they catch a missing `break`.
+
+    Args:
+        clusters: The clusters of a bucket, in the order they were started.
+
+    Returns:
+        The first cluster holding each pattern, up to the first cluster without one.
+    """
+    patterns: dict[Node, Cluster] = {}
+    for cluster in clusters:
+        if cluster.pattern is None:  # pragma: no mutate - time only
+            break
+        patterns.setdefault(cluster.pattern, cluster)  # pragma: no mutate - time only
+    return patterns
+
+
+def _closest(clusters: Sequence[Cluster], tree: Node, home: dict[int, Cluster]) -> Cluster:
+    """Weigh a statement against every cluster and keep the closest, the first on a tie.
+
+    Clone Digger 1.1.0 also added the statement to every cluster that improved on the
+    best so far, which inflated their sizes; only the chosen one receives it.
+
+    Args:
+        clusters: The clusters of a bucket, in the order they were started.
+        tree: The statement's tree.
+        home: The cluster each gathered tree belongs to, by the identity of the tree.
+
+    Returns:
+        The cluster whose pattern the statement is closest to.
+    """
+    # A cluster stops being weighed once it cannot be closer than the best so far.
+    start = home.get(id(tree))  # pragma: no mutate - time only
+    known = _known_distance(start, tree)  # pragma: no mutate - time only
+    # Just above the known distance: a cluster as close but earlier still wins.
+    ceiling = math.nextafter(known, math.inf)
+    best, lowest = clusters[0], math.inf
+    for cluster in clusters:
+        distance = _distance_to(cluster, tree, min(lowest, ceiling))
+        if distance < lowest:
+            best, lowest = cluster, distance
+    return best
 
 
 def _homes(clusters: Sequence[Cluster]) -> dict[int, Cluster]:
@@ -532,6 +582,24 @@ def without_dominated(clones: Sequence[Clone]) -> list[Clone]:
     return [clone for clone in clones if not dominated(clone)]
 
 
+def long_sequences(files: Sequence[SourceFile], settings: Settings) -> list[Sequence[Statement]]:
+    """Keep the statement sequences that span enough lines: the first step of the run.
+
+    Args:
+        files: The parsed files.
+        settings: The size threshold.
+
+    Returns:
+        The sequences spanning at least `size_threshold` lines, in the order they come.
+    """
+    return [
+        sequence
+        for file in files
+        for sequence in file.sequences
+        if len(covered_lines(sequence)) >= settings.size_threshold
+    ]
+
+
 def find_clones(files: Sequence[SourceFile], settings: Settings | None = None) -> list[Clone]:
     """Find the clones across a set of files.
 
@@ -543,12 +611,7 @@ def find_clones(files: Sequence[SourceFile], settings: Settings | None = None) -
         The clones, each a pair of statement runs with their distance.
     """
     settings = settings or Settings()
-    sequences: Sequence[Sequence[Statement]] = [
-        sequence
-        for file in files
-        for sequence in file.sequences
-        if len(covered_lines(sequence)) >= settings.size_threshold
-    ]
+    sequences: Sequence[Sequence[Statement]] = long_sequences(files, settings)
     buckets = buckets_by_shape(sequences, settings.hashing_depth)
     for statements in buckets.values():
         mark_statements(statements, build_clusters(statements, settings.clustering_threshold))
