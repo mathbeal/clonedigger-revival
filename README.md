@@ -159,6 +159,9 @@ Imports, docstrings, type annotations of signatures and type parameters are left
 the comparison: two functions that do the same work with other annotations are still
 clones.
 
+[docs/how-it-works.md](docs/how-it-works.md) walks through each step, and through
+anti-unification itself, with examples that `just test` runs.
+
 ## Faithful, and where it differs
 
 The tests run the unmodified 1.1.0 release under Python 2.7 (Docker) and record its

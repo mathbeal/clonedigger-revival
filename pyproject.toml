@@ -40,7 +40,7 @@ build-backend = "hatchling.build"
 packages = ["src/clonedigger"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/src", "/tests", "/README.md", "/NOTICE.md", "/LICENSE", "/LICENSES", "/REUSE.toml", "/CITATION.cff"]
+include = ["/src", "/tests", "/docs", "/README.md", "/NOTICE.md", "/LICENSE", "/LICENSES", "/REUSE.toml", "/CITATION.cff"]
 
 [tool.ruff]
 line-length = 100
@@ -133,6 +133,7 @@ source_paths = [
 do_not_mutate = ["src/clonedigger/__init__.py"]
 also_copy = [
     "tests/golden/",
+    "docs/",
     "examples/",
     "benchmarks/sample.json",
     "benchmarks/labels.jsonl",
