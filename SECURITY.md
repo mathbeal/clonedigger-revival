@@ -40,4 +40,6 @@ No version is released yet: the `main` branch only.
 - ruff's security rules (bandit) fail the build on a risky call; CodeQL scans the code
   once the repository is public;
 - the build is reproducible: the same commit gives the same wheel and sdist, bit for bit
-  (`just reproducible`).
+  (`just reproducible`);
+- every build writes a CycloneDX SBOM of the installed wheel (`just build`), attached as
+  an artifact of the CI and release workflows.
