@@ -139,11 +139,20 @@ audit:
     uv export --frozen --no-emit-project --all-groups -o /tmp/clonedigger-req.txt
     uvx pip-audit --strict --disable-pip -r /tmp/clonedigger-req.txt
 
-# Build the wheel and the sdist, dated by the last commit, and check them.
+# Build the wheel and the sdist, dated by the last commit, check them, and write the
+# CycloneDX SBOM of the installed wheel to sbom.cdx.json.
 build:
-    rm -rf dist
-    SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)" uv build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    rm -rf dist sbom.cdx.json
+    export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+    uv build
     uv run --no-project --with twine twine check --strict dist/*
+    venv="$(mktemp -d)/venv"
+    uv venv --no-project -q "$venv"
+    uv pip install --python "$venv" --quiet dist/*.whl
+    uvx --from cyclonedx-bom cyclonedx-py environment --pyproject pyproject.toml \
+      --output-reproducible -o sbom.cdx.json "$venv"
 
 # Build twice, the second time with every source file touched, and fail unless the wheel
 # and the sdist are the same bit for bit.

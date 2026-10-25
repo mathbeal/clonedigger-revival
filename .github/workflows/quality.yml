@@ -113,6 +113,18 @@ jobs:
           uv build -q -o second
           (cd first && sha256sum -- *) > first.sha256
           (cd second && sha256sum --check --strict ../first.sha256)
+      - name: write the CycloneDX SBOM of the installed wheel
+        run: |
+          venv="$(mktemp -d)/venv"
+          uv venv --no-project -q "$venv"
+          uv pip install --python "$venv" --quiet dist/*.whl
+          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)" \
+            uvx --from cyclonedx-bom cyclonedx-py environment --pyproject pyproject.toml \
+              --output-reproducible -o sbom.cdx.json "$venv"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sbom
+          path: sbom.cdx.json
 
   audit:
     name: known vulnerabilities
