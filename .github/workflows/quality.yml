@@ -91,6 +91,9 @@ jobs:
       - run: uvx typos .
       - run: uvx --from 'reuse[charset-normalizer]==6.2.0' reuse lint
       - run: uvx zizmor --persona=regular .github/workflows/
+      # The workflow of docs/github-code-scanning.md is written to be copied into
+      # another project: it is held to the strictest persona zizmor has.
+      - run: uvx zizmor --persona=auditor examples/code-scanning.yml
 
   build:
     name: the wheel and the sdist build, check and reproduce
