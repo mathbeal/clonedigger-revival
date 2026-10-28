@@ -38,6 +38,9 @@ No version is released yet: the `main` branch only.
 - the actions of the workflows are pinned by commit, start with no permission, and are
   audited by zizmor; every commit is scanned for secrets by gitleaks;
 - ruff's security rules (bandit) fail the build on a risky call; CodeQL scans the code
-  once the repository is public;
+  and OpenSSF Scorecard rates these supply-chain practices, both once the repository is
+  public;
 - the build is reproducible: the same commit gives the same wheel and sdist, bit for bit
-  (`just reproducible`).
+  (`just reproducible`);
+- every build writes a CycloneDX SBOM of the installed wheel (`just build`), attached as
+  an artifact of the CI and release workflows.
