@@ -130,7 +130,6 @@ source_paths = [
     "benchmarks/phases.py",
     "benchmarks/precision.py",
 ]
-do_not_mutate = ["src/clonedigger/__init__.py"]
 also_copy = [
     "tests/golden/",
     "docs/",
