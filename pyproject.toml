@@ -130,7 +130,6 @@ source_paths = [
     "benchmarks/phases.py",
     "benchmarks/precision.py",
 ]
-do_not_mutate = ["src/clonedigger/__init__.py"]
 also_copy = [
     "tests/golden/",
     "docs/",
@@ -153,6 +152,5 @@ arg-type-hints-in-docstring = false
 check-return-types = false
 check-yield-types = false
 skip-checking-raises = true
-check-class-attributes = true
 allow-init-docstring = true
 skip-checking-short-docstrings = false
