@@ -136,6 +136,8 @@ also_copy = [
     "examples/",
     "benchmarks/sample.json",
     "benchmarks/labels.jsonl",
+    ".pre-commit-hooks.yaml",
+    "README.md",
 ]
 pytest_add_cli_args = ["--no-cov", "-p", "no:cacheprovider"]
 
