@@ -9,6 +9,10 @@
 [![Types: mypy strict](https://img.shields.io/badge/types-mypy%20strict-blue)](https://mypy.readthedocs.io)
 [![Vocabulary: lexdrift](https://img.shields.io/badge/vocabulary-lexdrift-blue)](https://github.com/mathbeal/lexdrift)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+<!-- OpenSSF Scorecard only publishes a score for a public repository; add this badge
+back once this one is public:
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/mathbeal/clonedigger-revival/badge)](https://scorecard.dev/viewer/?uri=github.com/mathbeal/clonedigger-revival)
+-->
 
 **Clone Digger is the work of Peter Bulychev.** It finds duplicated code by comparing
 the shape of syntax trees and measuring their differences with *anti-unification*, an

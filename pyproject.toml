@@ -133,13 +133,14 @@ source_paths = [
     "benchmarks/phases.py",
     "benchmarks/precision.py",
 ]
-do_not_mutate = ["src/clonedigger/__init__.py"]
 also_copy = [
     "tests/golden/",
     "docs/",
     "examples/",
     "benchmarks/sample.json",
     "benchmarks/labels.jsonl",
+    ".pre-commit-hooks.yaml",
+    "README.md",
 ]
 pytest_add_cli_args = ["--no-cov", "-p", "no:cacheprovider"]
 
@@ -154,6 +155,5 @@ arg-type-hints-in-docstring = false
 check-return-types = false
 check-yield-types = false
 skip-checking-raises = true
-check-class-attributes = true
 allow-init-docstring = true
 skip-checking-short-docstrings = false
