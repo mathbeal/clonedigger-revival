@@ -95,8 +95,11 @@ dev = [
     "pylint==4.0.9",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
+    # The example workflow of docs/github-code-scanning.md, read as Actions reads it.
+    "pyyaml==6.0.3",
     "ruff==0.16.10",
     "types-jsonschema==4.26.0.20261006",
+    "types-pyyaml==6.0.12.20260906",
     "vulture==2.14",
 ]
 

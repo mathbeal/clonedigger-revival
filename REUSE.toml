@@ -55,6 +55,13 @@ path = [
 SPDX-FileCopyrightText = "2026 Mathieu Béal"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
+# The example workflow, written to be copied into another project as it stands: a
+# header of this repository in it would be copied along with it.
+[[annotations]]
+path = "examples/code-scanning.yml"
+SPDX-FileCopyrightText = "2026 Mathieu Béal"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
 # The SARIF schema of OASIS, used to validate the SARIF report.
 [[annotations]]
 path = "tests/data/sarif-schema-2.1.0.json"

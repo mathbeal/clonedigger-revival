@@ -64,3 +64,11 @@ repos:
         language: system
         files: ^\.github/workflows/
         pass_filenames: false
+      # The example of docs/github-code-scanning.md, written to be copied into another
+      # project: the strictest persona zizmor has.
+      - id: zizmor-example
+        name: zizmor (the example workflow)
+        entry: uvx zizmor --persona=auditor examples/code-scanning.yml
+        language: system
+        files: ^examples/code-scanning\.yml$
+        pass_filenames: false
