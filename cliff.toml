@@ -31,17 +31,12 @@ body = """
 {% endfor %}
 {% endfor %}\n
 """
-trim = true
 footer = ""
 
 [git]
-conventional_commits = true
 # Nothing is lost: an unconventional commit is grouped, not dropped.
 filter_unconventional = false
-split_commits = false
 protect_breaking_commits = true
-filter_commits = false
-topo_order = false
 sort_commits = "newest"
 
 commit_parsers = [
