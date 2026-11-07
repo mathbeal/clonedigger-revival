@@ -103,9 +103,6 @@ dev = [
     "vulture==2.14",
 ]
 
-[tool.pylint.format]
-max-line-length = 100
-
 # A suppression that silences nothing hides the next real finding at that line: refused.
 [tool.pylint."messages control"]
 enable = ["useless-suppression"]
