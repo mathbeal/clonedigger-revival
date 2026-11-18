@@ -41,7 +41,6 @@ sort_commits = "newest"
 
 commit_parsers = [
   { message = "^feat",            group = "Added" },
-  { message = "^add",             group = "Added" },
   { message = "^fix",             group = "Fixed" },
   { message = "^perf",            group = "Performance" },
   { message = "^refactor",        group = "Changed" },
@@ -52,7 +51,6 @@ commit_parsers = [
   { message = "^chore\\(release\\)", skip = true },
   { message = "^(build|ci|chore)", group = "Internal" },
   { message = "^revert",          group = "Reverted" },
-  { message = "^release",         skip = true },
   # A merge commit records how a branch landed, not what changed. The commits
   # it brings in are already listed on their own.
   { message = "^Merge (pull request|branch|remote)", skip = true },
