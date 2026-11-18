@@ -118,9 +118,6 @@ paths = ["src", "vulture_whitelist.py"]
 min_confidence = 60
 sort_by_size = true
 
-[tool.deptry]
-known_first_party = ["clonedigger"]
-
 # Mutation testing: change the code a little, one way at a time, and check that some
 # test fails. A mutant that survives is a behaviour no test pins down.
 [tool.mutmut]
