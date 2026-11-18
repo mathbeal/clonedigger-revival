@@ -10,10 +10,3 @@ max_concurrency = 8
 cache = true
 # A site that refuses robots (403) or asks to slow down (429) is up.
 accept = ["200..=299", "403", "429"]
-
-exclude = [
-  # This repository is private for now: its pages answer 404 to a robot.
-  '^https://github\.com/mathbeal/clonedigger-revival',
-  # The CI badge and the coverage badges are images of a private repository.
-  '^https://img\.shields\.io/',
-]
