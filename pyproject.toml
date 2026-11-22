@@ -131,7 +131,6 @@ source_paths = [
     "benchmarks/precision.py",
 ]
 also_copy = [
-    "tests/golden/",
     "docs/",
     "examples/",
     "benchmarks/sample.json",
