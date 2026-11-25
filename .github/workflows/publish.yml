@@ -17,9 +17,6 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
-env:
-  UV_FROZEN: "1"
-
 jobs:
   build:
     name: build and check, from the tagged commit
